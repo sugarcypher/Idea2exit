@@ -1,0 +1,46 @@
+{
+  "passed": 8,
+  "total": 8,
+  "details": [
+    {
+      "test": "Health Check",
+      "success": true,
+      "status": 200
+    },
+    {
+      "test": "User Registration",
+      "success": true,
+      "status": 200
+    },
+    {
+      "test": "Get User Profile",
+      "success": true,
+      "status": 200
+    },
+    {
+      "test": "Create Project",
+      "success": true,
+      "status": 200
+    },
+    {
+      "test": "Get Projects",
+      "success": true,
+      "status": 200
+    },
+    {
+      "test": "Get Project Detail",
+      "success": true,
+      "status": 200
+    },
+    {
+      "test": "Get Project Agents",
+      "success": true,
+      "status": 200
+    },
+    {
+      "test": "Get Project Documents",
+      "success": true,
+      "status": 200
+    }
+  ]
+}
