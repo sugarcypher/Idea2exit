@@ -24,7 +24,14 @@ export default function Login() {
       toast.success('Welcome back!');
       navigate('/dashboard');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Login failed');
+      const detail = error.response?.data?.detail;
+      let errorMessage = 'Login failed';
+      if (typeof detail === 'string') {
+        errorMessage = detail;
+      } else if (Array.isArray(detail)) {
+        errorMessage = detail.map(d => d.msg || d).join(', ');
+      }
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

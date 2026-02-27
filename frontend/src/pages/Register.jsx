@@ -25,7 +25,14 @@ export default function Register() {
       toast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Registration failed');
+      const detail = error.response?.data?.detail;
+      let errorMessage = 'Registration failed';
+      if (typeof detail === 'string') {
+        errorMessage = detail;
+      } else if (Array.isArray(detail)) {
+        errorMessage = detail.map(d => d.msg || d).join(', ');
+      }
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
