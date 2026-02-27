@@ -229,7 +229,10 @@
 
 /* Success states */
 .success-container {
-  @apply p-6 rounded-xl border border-success-500/30 bg-success-500/5 text-success-500;
+  @apply p-6 rounded-xl border;
+  border-color: rgb(16 185 129 / 0.3);
+  background-color: rgb(16 185 129 / 0.05);
+  color: rgb(16 185 129);
 }
 
 /* Toast customization */
