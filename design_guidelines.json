@@ -1,0 +1,175 @@
+{
+  "identity": {
+    "name": "E1 - The Anti-AI Designer",
+    "mission": "Create a 'War Room' for innovators that feels like a futuristic lab, not a generic SaaS.",
+    "core_principles": [
+      "Fusion over Imitation: Mix Architectural Precision with Digital Fluidity.",
+      "Emotion First: The interface should feel 'Alive' and 'Intelligent'.",
+      "Content is King: Data is the art. Visualization is the narrative.",
+      "Negative Space: Luxurious spacing (2x standard) to denote value."
+    ]
+  },
+  "typography": {
+    "fonts": {
+      "heading": "Manrope, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "weights": {
+      "thin": 100,
+      "light": 300,
+      "normal": 400,
+      "medium": 500,
+      "bold": 700,
+      "black": 900
+    },
+    "usage": {
+      "h1": "font-heading font-bold text-4xl md:text-6xl tracking-tight leading-none",
+      "h2": "font-heading font-semibold text-3xl md:text-4xl tracking-tight",
+      "h3": "font-heading font-medium text-2xl tracking-normal",
+      "body": "font-body text-base leading-relaxed text-muted-foreground",
+      "caption": "font-mono text-xs uppercase tracking-widest text-muted-foreground/70",
+      "metric": "font-mono text-3xl md:text-5xl font-light tracking-tighter"
+    }
+  },
+  "colors": {
+    "palette": {
+      "mode": "dark",
+      "background": "#020408",
+      "foreground": "#F8FAFC",
+      "card": "#0B101B",
+      "card_foreground": "#F8FAFC",
+      "popover": "#0B101B",
+      "primary": "#3B82F6",
+      "primary_foreground": "#FFFFFF",
+      "secondary": "#1E293B",
+      "secondary_foreground": "#F8FAFC",
+      "muted": "#1E293B",
+      "muted_foreground": "#94A3B8",
+      "accent": "#3B82F6",
+      "accent_foreground": "#FFFFFF",
+      "destructive": "#EF4444",
+      "border": "#1E293B",
+      "input": "#1E293B",
+      "ring": "#3B82F6"
+    },
+    "semantic": {
+      "swarm_active": "#3B82F6",
+      "swarm_idle": "#64748B",
+      "swarm_error": "#EF4444",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "visionary_purple": "#8B5CF6"
+    },
+    "gradients": {
+      "hero_glow": "radial-gradient(circle at center, rgba(59, 130, 246, 0.15) 0%, rgba(2, 4, 8, 0) 70%)",
+      "tracing_beam": "linear-gradient(90deg, transparent, #3B82F6, transparent)"
+    }
+  },
+  "layout": {
+    "spacing_scale": {
+      "container_padding": "p-6 md:p-12",
+      "section_gap": "gap-8 md:gap-16",
+      "component_gap": "gap-4 md:gap-6"
+    },
+    "grid_system": {
+      "bento_dashboard": "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6",
+      "marketing_hero": "grid grid-cols-1 md:grid-cols-12 gap-8 items-center"
+    },
+    "containers": {
+      "main_wrapper": "max-w-[1400px] mx-auto w-full",
+      "narrow_wrapper": "max-w-3xl mx-auto w-full"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.2)]",
+    "tracing_beam": "absolute inset-0 border border-transparent [mask-image:linear-gradient(white,transparent)] before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-blue-500/20 before:to-transparent before:animate-shimmer",
+    "grid_background": "bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]",
+    "neon_glow": "shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+  },
+  "components": {
+    "ui_library": "shadcn/ui",
+    "overrides": {
+      "card": "rounded-xl border-border/40 bg-card/50 backdrop-blur-sm",
+      "button": {
+        "default": "rounded-lg font-medium tracking-wide transition-all duration-300 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-[1.02]",
+        "ghost": "hover:bg-white/5 hover:text-white"
+      },
+      "input": "bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all rounded-lg",
+      "dialog": "bg-background/95 backdrop-blur-2xl border-border/50"
+    },
+    "custom_components": {
+      "SwarmNode": "rounded-full bg-background border border-primary/30 shadow-[0_0_15px_rgba(59,130,246,0.2)] flex items-center justify-center text-xs font-mono",
+      "DocumentPage": "bg-white text-black shadow-xl min-h-[1100px] w-full max-w-[850px] mx-auto p-12 my-8 rounded-sm"
+    }
+  },
+  "motion": {
+    "library": "framer-motion",
+    "presets": {
+      "fade_in": {
+        "initial": { "opacity": 0, "y": 20 },
+        "animate": { "opacity": 1, "y": 0 },
+        "transition": { "duration": 0.5, "ease": "easeOut" }
+      },
+      "stagger_container": {
+        "hidden": { "opacity": 0 },
+        "show": {
+          "opacity": 1,
+          "transition": {
+            "staggerChildren": 0.1
+          }
+        }
+      },
+      "hover_lift": {
+        "whileHover": { "y": -4, "transition": { "duration": 0.2 } }
+      }
+    }
+  },
+  "media": {
+    "image_urls": {
+      "hero_network": "https://images.unsplash.com/photo-1647356191320-d7a1f80ca777?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "team_collaboration": "https://images.unsplash.com/photo-1758873269317-51888e824b28?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "office_meeting": "https://images.pexels.com/photos/6914348/pexels-photo-6914348.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "abstract_cube": "https://images.pexels.com/photos/28428592/pexels-photo-28428592.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "architecture_minimal": "https://images.unsplash.com/photo-1457061625920-72ae6a15b987?crop=entropy&cs=srgb&fm=jpg&q=85"
+    },
+    "icons": {
+      "preferred_library": "lucide-react",
+      "style": "stroke-width: 1.5px"
+    }
+  },
+  "page_specifics": {
+    "dashboard": {
+      "layout": "Bento Grid (Mode B)",
+      "key_elements": [
+        "Project Health Monitor (Circular Progress)",
+        "Active Agents Pulse (Live Activity Feed)",
+        "Recent Documents (Card List)",
+        "Next Steps (Checklist)"
+      ]
+    },
+    "swarm_visualizer": {
+      "library": "react-force-graph or similar via D3",
+      "style": "Dark void background, glowing blue nodes, animated edges for active data transfer.",
+      "interaction": "Click node to see agent logs/status."
+    },
+    "document_hub": {
+      "layout": "Split View: Sidebar (File Tree) | Main (Editor/Preview)",
+      "style": "Light Mode for the actual document paper (illusion of reality), Dark Mode for the UI chrome."
+    },
+    "landing_builder": {
+      "layout": "Left Sidebar (Blocks) | Center (Canvas) | Right Sidebar (Properties)",
+      "style": "Canvas should be resizable (Desktop/Tablet/Mobile view)."
+    }
+  },
+  "universal_guidelines": [
+    "Do not use gradients for dark colors.",
+    "Avoid generic centered layouts.",
+    "Use layered design elements with z-index hierarchy.",
+    "Apply glassmorphism with 12-24px blur.",
+    "No 'transition: all'. Use specific transitions.",
+    "No center-aligning app container.",
+    "All interactive elements must have data-testid."
+  ],
+  "instructions_to_main_agent": "Follow the 'Anti-AI' persona. Be bold with spacing and contrast. Use the provided image URLs for placeholders. Implement the dual-theme strategy (Dark for App, Light for Docs). Use 'Manrope' for all headings."
+}
