@@ -85,11 +85,7 @@ function App() {
           <AppRoutes />
           <Toaster 
             position="top-right"
-            toastOptions={{
-              classNames: {
-                toast: 'bg-card border-border text-foreground',
-              },
-            }}
+            richColors
           />
         </AuthProvider>
       </BrowserRouter>
