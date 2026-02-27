@@ -160,7 +160,8 @@
 }
 
 .wizard-step-indicator.completed {
-  @apply bg-success-500 text-white;
+  background-color: rgb(16 185 129);
+  @apply text-white;
 }
 
 .wizard-step-indicator.pending {
