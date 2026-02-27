@@ -1,34 +1,234 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* App-specific styles */
+
+/* Layout containers */
+.app-container {
+  @apply min-h-screen bg-background;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.main-content {
+  @apply max-w-[1400px] mx-auto w-full;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.narrow-content {
+  @apply max-w-3xl mx-auto w-full;
 }
 
-.App-link {
-    color: #61dafb;
+/* Bento grid layout */
+.bento-grid {
+  @apply grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* Section spacing */
+.section-spacing {
+  @apply py-8 md:py-16 px-6 md:px-12;
+}
+
+/* Component spacing */
+.component-spacing {
+  @apply space-y-4 md:space-y-6;
+}
+
+/* Typography classes matching design guidelines */
+.heading-1 {
+  @apply font-bold text-4xl md:text-6xl tracking-tight leading-none;
+  font-family: 'Manrope', sans-serif;
+}
+
+.heading-2 {
+  @apply font-semibold text-3xl md:text-4xl tracking-tight;
+  font-family: 'Manrope', sans-serif;
+}
+
+.heading-3 {
+  @apply font-medium text-2xl tracking-normal;
+  font-family: 'Manrope', sans-serif;
+}
+
+.body-text {
+  @apply text-base leading-relaxed text-muted-foreground;
+  font-family: 'Inter', sans-serif;
+}
+
+.caption-text {
+  @apply text-xs uppercase tracking-widest text-muted-foreground/70;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.metric-text {
+  @apply text-3xl md:text-5xl font-light tracking-tighter;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Card overrides */
+.custom-card {
+  @apply rounded-xl border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300;
+}
+
+.custom-card:hover {
+  @apply border-primary/30;
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+}
+
+/* Input overrides */
+.custom-input {
+  @apply bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all rounded-lg;
+}
+
+/* Button effects */
+.btn-glow {
+  @apply transition-all duration-300;
+}
+
+.btn-glow:hover {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+  transform: scale(1.02);
+}
+
+/* Sidebar styles */
+.sidebar {
+  @apply w-64 min-h-screen bg-card/30 border-r border-border/40 p-6;
+}
+
+.sidebar-link {
+  @apply flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground transition-all duration-200;
+}
+
+.sidebar-link:hover {
+  @apply bg-secondary/50 text-foreground;
+}
+
+.sidebar-link.active {
+  @apply bg-primary/10 text-primary border border-primary/20;
+}
+
+/* Agent visualization */
+.agent-grid {
+  @apply grid grid-cols-2 md:grid-cols-3 gap-4;
+}
+
+.agent-card {
+  @apply p-4 rounded-xl border border-border/40 bg-card/30 backdrop-blur-sm transition-all duration-300;
+}
+
+.agent-card.manager {
+  @apply border-visionary-500/30 bg-visionary-500/5;
+}
+
+.agent-card.specialist {
+  @apply border-primary/30 bg-primary/5;
+}
+
+.agent-card.worker {
+  @apply border-success-500/30 bg-success-500/5;
+}
+
+/* Document cards */
+.document-card {
+  @apply p-6 rounded-xl border border-border/40 bg-card/30 backdrop-blur-sm cursor-pointer transition-all duration-300;
+}
+
+.document-card:hover {
+  @apply border-primary/40 transform -translate-y-1;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Progress indicators */
+.progress-ring {
+  @apply relative;
+}
+
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.5s ease;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+/* Wizard steps */
+.wizard-step {
+  @apply flex items-center gap-4;
+}
+
+.wizard-step-indicator {
+  @apply w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300;
+}
+
+.wizard-step-indicator.active {
+  @apply bg-primary text-primary-foreground;
+}
+
+.wizard-step-indicator.completed {
+  @apply bg-success-500 text-white;
+}
+
+.wizard-step-indicator.pending {
+  @apply bg-secondary text-muted-foreground;
+}
+
+/* Preview device frames */
+.device-desktop {
+  @apply w-full aspect-video;
+}
+
+.device-tablet {
+  @apply w-[768px] max-w-full aspect-[4/3];
+}
+
+.device-mobile {
+  @apply w-[375px] max-w-full aspect-[9/16];
+}
+
+/* Analysis cards */
+.analysis-card {
+  @apply p-6 rounded-xl border border-border/40 bg-card/30;
+}
+
+.analysis-metric {
+  @apply text-4xl font-bold text-primary;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Timeline visualization */
+.timeline-item {
+  @apply relative pl-8 pb-8 border-l-2 border-border/40;
+}
+
+.timeline-item:last-child {
+  @apply pb-0;
+}
+
+.timeline-dot {
+  @apply absolute left-[-9px] w-4 h-4 rounded-full bg-primary;
+}
+
+/* Financial chart colors */
+.chart-revenue {
+  fill: hsl(var(--success));
+}
+
+.chart-cost {
+  fill: hsl(var(--destructive));
+}
+
+.chart-projection {
+  fill: hsl(var(--primary));
+}
+
+/* Loading states */
+.skeleton-shimmer {
+  @apply animate-pulse bg-secondary/50 rounded;
+}
+
+/* Error states */
+.error-container {
+  @apply p-6 rounded-xl border border-destructive/30 bg-destructive/5 text-destructive;
+}
+
+/* Success states */
+.success-container {
+  @apply p-6 rounded-xl border border-success-500/30 bg-success-500/5 text-success-500;
+}
+
+/* Toast customization */
+.toast-custom {
+  @apply bg-card border border-border/50 text-foreground;
 }
