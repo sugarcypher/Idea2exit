@@ -1,7 +1,7 @@
 import React from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "./components/ui/sonner";
+import { Toaster, toast } from "sonner";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 // Pages
@@ -83,10 +83,7 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <AppRoutes />
-          <Toaster 
-            position="top-right"
-            richColors
-          />
+          <Toaster position="top-right" richColors theme="dark" />
         </AuthProvider>
       </BrowserRouter>
     </div>
