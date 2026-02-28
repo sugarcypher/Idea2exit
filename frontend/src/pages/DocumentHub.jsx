@@ -3,15 +3,14 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { projectAPI, documentAPI } from '../lib/api';
 import { formatDate, getDocumentTypeLabel, downloadFile } from '../lib/utils';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import ReactMarkdown from 'react-markdown';
 import {
   Zap, ArrowLeft, Loader2, FileText, Download, Plus,
   Briefcase, TrendingUp, Megaphone, Shield, Presentation,
-  BookOpen, ChevronRight, Check
+  BookOpen, Check
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -35,6 +34,7 @@ export default function DocumentHub() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const loadData = async () => {
@@ -82,6 +82,37 @@ export default function DocumentHub() {
 
   const getExistingTypes = () => {
     return documents.map(d => d.document_type);
+  };
+
+  // Simple markdown renderer
+  const renderMarkdown = (content) => {
+    if (!content) return null;
+    
+    // Split by lines and process
+    const lines = content.split('\n');
+    const elements = [];
+    
+    lines.forEach((line, idx) => {
+      if (line.startsWith('# ')) {
+        elements.push(<h1 key={idx} className="text-3xl font-bold mb-4 mt-6">{line.slice(2)}</h1>);
+      } else if (line.startsWith('## ')) {
+        elements.push(<h2 key={idx} className="text-2xl font-semibold mb-3 mt-5">{line.slice(3)}</h2>);
+      } else if (line.startsWith('### ')) {
+        elements.push(<h3 key={idx} className="text-xl font-medium mb-2 mt-4">{line.slice(4)}</h3>);
+      } else if (line.startsWith('- ') || line.startsWith('* ')) {
+        elements.push(<li key={idx} className="ml-4 mb-1">{line.slice(2)}</li>);
+      } else if (line.match(/^\d+\./)) {
+        elements.push(<li key={idx} className="ml-4 mb-1 list-decimal">{line.replace(/^\d+\./, '')}</li>);
+      } else if (line.startsWith('**') && line.endsWith('**')) {
+        elements.push(<p key={idx} className="font-bold mb-2">{line.slice(2, -2)}</p>);
+      } else if (line.trim() === '') {
+        elements.push(<br key={idx} />);
+      } else {
+        elements.push(<p key={idx} className="mb-2 text-gray-700">{line}</p>);
+      }
+    });
+    
+    return elements;
   };
 
   if (loading) {
@@ -191,7 +222,7 @@ export default function DocumentHub() {
                   <Badge variant="secondary" className="mb-2">
                     {getDocumentTypeLabel(selectedDoc.document_type)}
                   </Badge>
-                  <h2 className="heading-3">{selectedDoc.title}</h2>
+                  <h2 className="text-2xl font-semibold">{selectedDoc.title}</h2>
                   <p className="text-sm text-muted-foreground mt-1">
                     Generated on {formatDate(selectedDoc.created_at)}
                   </p>
@@ -209,10 +240,8 @@ export default function DocumentHub() {
                 </TabsList>
                 
                 <TabsContent value="preview">
-                  <Card className="document-paper">
-                    <div className="prose prose-slate max-w-none">
-                      <ReactMarkdown>{selectedDoc.content}</ReactMarkdown>
-                    </div>
+                  <Card className="bg-white text-black shadow-xl min-h-[800px] w-full max-w-[850px] mx-auto rounded-sm p-12">
+                    {renderMarkdown(selectedDoc.content)}
                   </Card>
                 </TabsContent>
                 
