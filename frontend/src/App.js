@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
+import CookieConsent from "./components/CookieConsent";
 
 // Pages
 import Login from "./pages/Login";
@@ -16,6 +17,9 @@ import LandingPageBuilder from "./pages/LandingPageBuilder";
 import Analysis from "./pages/Analysis";
 import Simulation from "./pages/Simulation";
 import FundingKit from "./pages/FundingKit";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import AccountSettings from "./pages/AccountSettings";
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
