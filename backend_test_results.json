@@ -1,88 +1,88 @@
 {
   "summary": {
     "total_tests": 13,
-    "passed_tests": 9,
-    "success_rate": 69.23076923076923,
-    "timestamp": "2026-02-27T20:24:11.553577"
+    "passed_tests": 10,
+    "success_rate": 76.92307692307693,
+    "timestamp": "2026-03-01T13:52:07.447860"
   },
   "test_results": [
     {
       "test": "Health Check",
       "success": true,
       "details": "",
-      "timestamp": "2026-02-27T20:22:03.241640"
+      "timestamp": "2026-03-01T13:50:08.369170"
     },
     {
       "test": "User Registration",
       "success": true,
       "details": "",
-      "timestamp": "2026-02-27T20:22:03.613188"
+      "timestamp": "2026-03-01T13:50:08.729385"
     },
     {
       "test": "User Login",
       "success": true,
       "details": "",
-      "timestamp": "2026-02-27T20:22:04.388381"
+      "timestamp": "2026-03-01T13:50:09.402663"
     },
     {
       "test": "Get User Profile",
       "success": true,
       "details": "",
-      "timestamp": "2026-02-27T20:22:04.665255"
+      "timestamp": "2026-03-01T13:50:09.510438"
     },
     {
       "test": "Create Project",
       "success": true,
       "details": "",
-      "timestamp": "2026-02-27T20:22:04.786650"
+      "timestamp": "2026-03-01T13:50:09.626144"
     },
     {
       "test": "Get Projects",
       "success": true,
       "details": "",
-      "timestamp": "2026-02-27T20:22:04.957178"
+      "timestamp": "2026-03-01T13:50:09.738142"
     },
     {
       "test": "Get Project Detail",
       "success": true,
       "details": "",
-      "timestamp": "2026-02-27T20:22:05.081378"
+      "timestamp": "2026-03-01T13:50:09.846689"
     },
     {
       "test": "Get Project Agents",
       "success": true,
       "details": "",
-      "timestamp": "2026-02-27T20:22:05.237987"
+      "timestamp": "2026-03-01T13:50:09.957404"
     },
     {
       "test": "Generate Document",
-      "success": false,
-      "details": "Status: No response",
-      "timestamp": "2026-02-27T20:22:35.316033"
+      "success": true,
+      "details": "",
+      "timestamp": "2026-03-01T13:50:36.970965"
     },
     {
       "test": "Get Documents",
       "success": true,
       "details": "",
-      "timestamp": "2026-02-27T20:22:41.197768"
+      "timestamp": "2026-03-01T13:50:37.093178"
     },
     {
       "test": "Generate Landing Page",
       "success": false,
       "details": "Status: No response",
-      "timestamp": "2026-02-27T20:23:11.297169"
+      "timestamp": "2026-03-01T13:51:07.170563"
     },
     {
       "test": "Generate Analysis",
       "success": false,
       "details": "Status: No response",
-      "timestamp": "2026-02-27T20:23:41.423099"
+      "timestamp": "2026-03-01T13:51:37.324347"
     },
     {
       "test": "Delete Project",
       "success": false,
       "details": "Status: No response",
-      "timestamp": "2026-02-27T20:24:11.553550"
+      "timestamp": "2026-03-01T13:52:07.447828"
     }
   ]
 }
