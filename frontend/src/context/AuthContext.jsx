@@ -9,12 +9,26 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+    try {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      
+      if (storedToken && storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser && typeof parsedUser === 'object') {
+          setToken(storedToken);
+          setUser(parsedUser);
+        } else {
+          // Invalid user data, clear storage
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      }
+    } catch (error) {
+      // Clear corrupted data from localStorage
+      console.error('Error loading auth state:', error);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
     setLoading(false);
   }, []);
