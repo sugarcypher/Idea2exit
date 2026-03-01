@@ -13,6 +13,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import DocumentHub from "./pages/DocumentHub";
 import LandingPageBuilder from "./pages/LandingPageBuilder";
 import Analysis from "./pages/Analysis";
+import Simulation from "./pages/Simulation";
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
