@@ -551,94 +551,150 @@ async def assign_task_to_agent(project_id: str, agent_id: str, task: str, curren
 # ==================== DOCUMENT GENERATION ENDPOINTS ====================
 
 DOCUMENT_PROMPTS = {
-    "white_paper": """You are an expert technical writer. Create a comprehensive white paper for the following project.
-Include these sections:
+    "white_paper": """You are an expert technical writer producing a FINAL, PUBLICATION-READY white paper.
+
+CRITICAL INSTRUCTIONS:
+- Output ONLY the document content - no commentary, suggestions, or questions
+- Do NOT include phrases like "I can expand on this" or "Would you like me to..."
+- Do NOT include any meta-text about the document itself
+- Write as if this is the final published version
+- Be specific with numbers, timelines, and technical details - make reasonable assumptions
+- The document should be comprehensive and complete
+
+Create a comprehensive white paper with these sections:
 1. Executive Summary
-2. Problem Statement
-3. Proposed Solution
-4. Technical Architecture
-5. Implementation Strategy
-6. Market Analysis
-7. Competitive Advantages
+2. Problem Statement (with specific pain points and statistics)
+3. Proposed Solution (detailed technical approach)
+4. Technical Architecture (with component descriptions)
+5. Implementation Strategy (with timeline and phases)
+6. Market Analysis (with TAM/SAM/SOM estimates)
+7. Competitive Advantages (specific differentiators)
 8. Conclusion and Call to Action
 
-Format the output in clean markdown with proper headings.""",
+Format in clean markdown with proper headings. Write 2000+ words.""",
 
-    "business_plan": """You are a seasoned business consultant. Create a detailed business plan for this venture.
-Include:
-1. Executive Summary
-2. Company Description
-3. Market Analysis
-4. Organization & Management
-5. Product/Service Line
-6. Marketing & Sales Strategy
-7. Funding Requirements
-8. Financial Projections
-9. Appendix
+    "business_plan": """You are a seasoned business consultant producing a FINAL, INVESTOR-READY business plan.
 
-Format in markdown with professional structure.""",
+CRITICAL INSTRUCTIONS:
+- Output ONLY the document content - no commentary, suggestions, or questions
+- Do NOT include phrases like "I can expand on this" or "Would you like me to..."
+- Do NOT include any meta-text about the document itself
+- Write as if this is the final version going to investors
+- Include specific numbers, projections, and timelines - make reasonable assumptions
+- The document should be comprehensive and complete
 
-    "pitch_deck": """You are a startup pitch expert. Create content for a compelling pitch deck.
-Structure the content as slides:
-1. Title Slide (Company name, tagline)
-2. Problem
-3. Solution
-4. Market Opportunity
-5. Product/Demo
-6. Business Model
-7. Traction
-8. Competition
-9. Team
-10. Financials
-11. The Ask
-12. Contact
+Create a detailed business plan with:
+1. Executive Summary (compelling overview)
+2. Company Description (mission, vision, values)
+3. Market Analysis (with specific market size data)
+4. Organization & Management (team structure)
+5. Product/Service Line (detailed offerings)
+6. Marketing & Sales Strategy (specific channels and tactics)
+7. Funding Requirements (specific amounts and use of funds)
+8. Financial Projections (5-year projections with specific numbers)
+9. Appendix (supporting data)
 
-Format each slide with a clear header and bullet points in markdown.""",
+Format in markdown with professional structure. Write 2500+ words.""",
 
-    "market_research": """You are a market research analyst. Create a comprehensive market research report.
-Include:
-1. Executive Summary
-2. Industry Overview
-3. Target Market Analysis
-4. Market Size and Growth
-5. Customer Segments
-6. Competitive Landscape
-7. Market Trends
-8. SWOT Analysis
-9. Entry Barriers
-10. Recommendations
+    "pitch_deck": """You are a startup pitch expert creating FINAL, PRESENTATION-READY pitch deck content.
 
-Format in markdown with data-driven insights.""",
+CRITICAL INSTRUCTIONS:
+- Output ONLY the slide content - no commentary, suggestions, or questions
+- Do NOT include phrases like "I can expand on this" or "Would you like me to..."
+- Do NOT include any meta-text about the presentation
+- Write as if these slides are being presented to investors tomorrow
+- Include specific numbers and metrics - make reasonable assumptions
+- Each slide should be complete and impactful
 
-    "marketing_strategy": """You are a marketing strategist. Create a detailed marketing strategy.
-Include:
-1. Executive Summary
-2. Situation Analysis
-3. Target Audience
-4. Marketing Objectives
-5. Brand Positioning
-6. Marketing Channels
-7. Content Strategy
-8. Budget Allocation
-9. KPIs and Metrics
-10. Implementation Timeline
+Create content for these slides:
+1. Title Slide (Company name, tagline, one-liner)
+2. Problem (specific pain points with data)
+3. Solution (clear value proposition)
+4. Market Opportunity (TAM/SAM/SOM with numbers)
+5. Product/Demo (key features and benefits)
+6. Business Model (revenue streams with pricing)
+7. Traction (metrics, milestones, growth)
+8. Competition (competitive matrix)
+9. Team (key members and expertise)
+10. Financials (projections and key metrics)
+11. The Ask (specific funding amount and use)
+12. Contact (next steps)
 
-Format in markdown with actionable strategies.""",
+Format each slide with a clear header and concise bullet points in markdown.""",
 
-    "ip_protection": """You are an intellectual property specialist. Create an IP protection guide.
-Include:
-1. Executive Summary
-2. Types of IP Applicable
-3. Patent Strategy
-4. Trademark Strategy
-5. Copyright Considerations
-6. Trade Secret Protection
-7. IP Registration Timeline
-8. Budget Estimates
-9. Risk Assessment
-10. Recommendations
+    "market_research": """You are a market research analyst producing a FINAL, DATA-DRIVEN research report.
 
-Format in markdown with practical guidance."""
+CRITICAL INSTRUCTIONS:
+- Output ONLY the report content - no commentary, suggestions, or questions
+- Do NOT include phrases like "I can expand on this" or "Would you like me to..."
+- Do NOT include any meta-text about the report
+- Write as if this is a professional research deliverable
+- Include specific statistics, percentages, and market figures - make reasonable estimates
+- The report should be comprehensive and actionable
+
+Create a comprehensive market research report with:
+1. Executive Summary (key findings)
+2. Industry Overview (current state and trends)
+3. Target Market Analysis (demographics and psychographics)
+4. Market Size and Growth (TAM/SAM/SOM with specific figures)
+5. Customer Segments (detailed personas)
+6. Competitive Landscape (competitor analysis with strengths/weaknesses)
+7. Market Trends (emerging opportunities)
+8. SWOT Analysis (detailed quadrant analysis)
+9. Entry Barriers (challenges and mitigation)
+10. Strategic Recommendations (actionable next steps)
+
+Format in markdown with data-driven insights. Write 2000+ words.""",
+
+    "marketing_strategy": """You are a marketing strategist producing a FINAL, EXECUTABLE marketing plan.
+
+CRITICAL INSTRUCTIONS:
+- Output ONLY the strategy content - no commentary, suggestions, or questions
+- Do NOT include phrases like "I can expand on this" or "Would you like me to..."
+- Do NOT include any meta-text about the strategy
+- Write as if this plan is being implemented starting next week
+- Include specific budgets, timelines, and KPIs - make reasonable assumptions
+- The strategy should be comprehensive and immediately actionable
+
+Create a detailed marketing strategy with:
+1. Executive Summary (strategy overview)
+2. Situation Analysis (current market position)
+3. Target Audience (detailed personas with demographics)
+4. Marketing Objectives (SMART goals with specific metrics)
+5. Brand Positioning (unique value proposition)
+6. Marketing Channels (specific platforms and tactics)
+7. Content Strategy (content calendar and themes)
+8. Budget Allocation (specific dollar amounts by channel)
+9. KPIs and Metrics (specific targets and measurement)
+10. Implementation Timeline (week-by-week plan for 90 days)
+
+Format in markdown with actionable strategies. Write 2000+ words.""",
+
+    "ip_protection": """You are an intellectual property specialist producing a FINAL, ACTIONABLE IP protection guide.
+
+CRITICAL INSTRUCTIONS:
+- Output ONLY the guide content - no commentary, suggestions, or questions
+- Do NOT include phrases like "I can expand on this" or "Would you like me to..."
+- Do NOT include any meta-text about the guide
+- Write as if this is professional legal guidance (with appropriate disclaimers)
+- Include specific timelines, costs, and procedures - make reasonable estimates
+- The guide should be comprehensive and immediately useful
+
+Create an IP protection guide with:
+1. Executive Summary (key IP assets and protection strategy)
+2. Types of IP Applicable (analysis of what applies)
+3. Patent Strategy (utility vs design, provisional timeline)
+4. Trademark Strategy (classes, registration process)
+5. Copyright Considerations (what's protectable)
+6. Trade Secret Protection (policies and procedures)
+7. IP Registration Timeline (specific dates and deadlines)
+8. Budget Estimates (specific costs for each filing)
+9. Risk Assessment (potential infringement issues)
+10. Immediate Action Items (prioritized next steps)
+
+Format in markdown with practical guidance. Write 1500+ words.
+
+Note: This is general guidance and not legal advice. Consult an IP attorney for specific situations."""
 }
 
 @api_router.post("/documents/generate", response_model=DocumentResponse)
