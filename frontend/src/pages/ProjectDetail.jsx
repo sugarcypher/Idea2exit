@@ -477,6 +477,22 @@ export default function ProjectDetail() {
                   </p>
                 </CardContent>
               </Card>
+
+              <Card 
+                className="glass-card border-border/40 cursor-pointer hover:border-primary/30 transition-all duration-200 bg-gradient-to-br from-primary/5 to-transparent"
+                onClick={() => navigate(`/projects/${id}/funding`)}
+                data-testid="tool-funding"
+              >
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center mb-4">
+                    <Rocket className="w-6 h-6 text-yellow-400" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Funding & Branding Kit</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Investors, crowdfunding, outreach templates, AI videos, logos & brand identity - all in one click.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
