@@ -1383,6 +1383,410 @@ async def root():
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
+# ==================== USER SETTINGS & PRIVACY ====================
+
+@api_router.get("/user/preferences")
+async def get_user_preferences(current_user: dict = Depends(get_current_user)):
+    """Get user preferences"""
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "preferences": 1, "consents": 1})
+    return {
+        "preferences": user.get("preferences", {}),
+        "consents": user.get("consents", {})
+    }
+
+@api_router.put("/user/preferences")
+async def update_user_preferences(preferences: UserPreferences, current_user: dict = Depends(get_current_user), request: Request = None):
+    """Update user communication preferences"""
+    client_ip = request.client.host if request and request.client else "unknown"
+    
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"preferences": preferences.model_dump(), "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    await log_audit(current_user["id"], "PREFERENCES_UPDATED", "user", preferences.model_dump(), client_ip)
+    return {"message": "Preferences updated successfully"}
+
+@api_router.put("/user/consent")
+async def update_consent(consent: ConsentUpdate, current_user: dict = Depends(get_current_user), request: Request = None):
+    """Update user consent settings"""
+    client_ip = request.client.host if request and request.client else "unknown"
+    now = datetime.now(timezone.utc).isoformat()
+    
+    consent_field = f"consents.{consent.consent_type}"
+    consent_timestamp = f"consents.{consent.consent_type}_updated"
+    
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {consent_field: consent.granted, consent_timestamp: now, "updated_at": now}}
+    )
+    
+    await log_audit(current_user["id"], "CONSENT_UPDATED", "user", {"type": consent.consent_type, "granted": consent.granted}, client_ip)
+    return {"message": f"Consent for {consent.consent_type} updated"}
+
+@api_router.get("/user/export-data")
+async def export_user_data(current_user: dict = Depends(get_current_user), request: Request = None):
+    """Export all user data (GDPR data portability)"""
+    client_ip = request.client.host if request and request.client else "unknown"
+    
+    # Gather all user data
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "password": 0})
+    projects = await db.projects.find({"user_id": current_user["id"]}, {"_id": 0}).to_list(1000)
+    documents = await db.documents.find({"user_id": current_user["id"]}, {"_id": 0}).to_list(1000)
+    funding_kits = await db.funding_kits.find({"user_id": current_user["id"]}, {"_id": 0}).to_list(100)
+    analyses = await db.analyses.find({"user_id": current_user["id"]}, {"_id": 0}).to_list(100)
+    landing_pages = await db.landing_pages.find({"user_id": current_user["id"]}, {"_id": 0}).to_list(100)
+    
+    export_data = {
+        "export_date": datetime.now(timezone.utc).isoformat(),
+        "user_profile": user,
+        "projects": projects,
+        "documents": documents,
+        "funding_kits": funding_kits,
+        "analyses": analyses,
+        "landing_pages": landing_pages
+    }
+    
+    await log_audit(current_user["id"], "DATA_EXPORTED", "user", {"data_types": ["profile", "projects", "documents", "funding_kits", "analyses", "landing_pages"]}, client_ip)
+    
+    return export_data
+
+@api_router.post("/user/request-deletion")
+async def request_account_deletion(current_user: dict = Depends(get_current_user), request: Request = None):
+    """Request account deletion (GDPR right to be forgotten)"""
+    client_ip = request.client.host if request and request.client else "unknown"
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Mark account for deletion (30 day grace period)
+    deletion_date = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+    
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"deletion_requested": True, "deletion_scheduled": deletion_date, "updated_at": now}}
+    )
+    
+    await log_audit(current_user["id"], "DELETION_REQUESTED", "user", {"scheduled_for": deletion_date}, client_ip)
+    
+    return {
+        "message": "Account deletion requested",
+        "scheduled_deletion": deletion_date,
+        "note": "Your account and all data will be permanently deleted in 30 days. Login again to cancel."
+    }
+
+@api_router.post("/user/cancel-deletion")
+async def cancel_account_deletion(current_user: dict = Depends(get_current_user), request: Request = None):
+    """Cancel a pending account deletion request"""
+    client_ip = request.client.host if request and request.client else "unknown"
+    
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"deletion_requested": False, "deletion_scheduled": None, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    await log_audit(current_user["id"], "DELETION_CANCELLED", "user", {}, client_ip)
+    return {"message": "Account deletion cancelled"}
+
+@api_router.put("/user/change-password")
+async def change_password(
+    old_password: str,
+    new_password: str,
+    current_user: dict = Depends(get_current_user),
+    request: Request = None
+):
+    """Change user password"""
+    client_ip = request.client.host if request and request.client else "unknown"
+    
+    # Get full user with password
+    user = await db.users.find_one({"id": current_user["id"]})
+    
+    if not verify_password(old_password, user["password"]):
+        await log_audit(current_user["id"], "PASSWORD_CHANGE_FAILED", "user", {"reason": "wrong_old_password"}, client_ip)
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    # Validate new password
+    is_valid, message = validate_password_strength(new_password)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=message)
+    
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"password": hash_password(new_password), "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    await log_audit(current_user["id"], "PASSWORD_CHANGED", "user", {}, client_ip)
+    return {"message": "Password changed successfully"}
+
+# ==================== ADMIN ENDPOINTS ====================
+
+async def require_admin(current_user: dict = Depends(get_current_user)):
+    """Dependency to require admin role"""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
+
+@api_router.get("/admin/users")
+async def admin_get_users(
+    skip: int = 0,
+    limit: int = 50,
+    admin: dict = Depends(require_admin)
+):
+    """Get all users (admin only)"""
+    users = await db.users.find(
+        {},
+        {"_id": 0, "password": 0}
+    ).skip(skip).limit(limit).to_list(limit)
+    
+    total = await db.users.count_documents({})
+    
+    return {"users": users, "total": total, "skip": skip, "limit": limit}
+
+@api_router.get("/admin/audit-logs")
+async def admin_get_audit_logs(
+    skip: int = 0,
+    limit: int = 100,
+    user_id: Optional[str] = None,
+    action: Optional[str] = None,
+    admin: dict = Depends(require_admin)
+):
+    """Get audit logs (admin only)"""
+    query = {}
+    if user_id:
+        query["user_id"] = user_id
+    if action:
+        query["action"] = action
+    
+    logs = await db.audit_logs.find(
+        query,
+        {"_id": 0}
+    ).sort("timestamp", -1).skip(skip).limit(limit).to_list(limit)
+    
+    total = await db.audit_logs.count_documents(query)
+    
+    return {"logs": logs, "total": total, "skip": skip, "limit": limit}
+
+@api_router.put("/admin/users/{user_id}/role")
+async def admin_update_user_role(
+    user_id: str,
+    role: str,
+    admin: dict = Depends(require_admin),
+    request: Request = None
+):
+    """Update user role (admin only)"""
+    if role not in ["user", "admin"]:
+        raise HTTPException(status_code=400, detail="Invalid role. Must be 'user' or 'admin'")
+    
+    client_ip = request.client.host if request and request.client else "unknown"
+    
+    result = await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"role": role, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    await log_audit(admin["id"], "USER_ROLE_UPDATED", "admin", {"target_user": user_id, "new_role": role}, client_ip)
+    return {"message": f"User role updated to {role}"}
+
+@api_router.post("/admin/users/{user_id}/unlock")
+async def admin_unlock_user(
+    user_id: str,
+    admin: dict = Depends(require_admin),
+    request: Request = None
+):
+    """Unlock a locked user account (admin only)"""
+    client_ip = request.client.host if request and request.client else "unknown"
+    
+    result = await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"locked_until": None, "login_attempts": 0, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    await log_audit(admin["id"], "USER_UNLOCKED", "admin", {"target_user": user_id}, client_ip)
+    return {"message": "User account unlocked"}
+
+@api_router.get("/admin/stats")
+async def admin_get_stats(admin: dict = Depends(require_admin)):
+    """Get platform statistics (admin only)"""
+    total_users = await db.users.count_documents({})
+    total_projects = await db.projects.count_documents({})
+    total_documents = await db.documents.count_documents({})
+    active_users = await db.users.count_documents({"last_login": {"$gte": (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()}})
+    locked_accounts = await db.users.count_documents({"locked_until": {"$ne": None}})
+    pending_deletions = await db.users.count_documents({"deletion_requested": True})
+    
+    return {
+        "total_users": total_users,
+        "active_users_30d": active_users,
+        "total_projects": total_projects,
+        "total_documents": total_documents,
+        "locked_accounts": locked_accounts,
+        "pending_deletions": pending_deletions
+    }
+
+# ==================== LEGAL PAGES ====================
+
+@api_router.get("/legal/terms")
+async def get_terms_of_service():
+    """Get Terms of Service"""
+    return {
+        "title": "Terms of Service",
+        "last_updated": "2025-12-01",
+        "content": """
+# Terms of Service
+
+## 1. Acceptance of Terms
+By accessing or using IdeaForge ("the Service"), you agree to be bound by these Terms of Service.
+
+## 2. Description of Service
+IdeaForge is an AI-powered innovation platform that helps entrepreneurs transform ideas into businesses through document generation, market analysis, funding tools, and branding services.
+
+## 3. User Accounts
+- You must provide accurate and complete information when creating an account
+- You are responsible for maintaining the security of your account credentials
+- You must be at least 18 years old to use this service
+
+## 4. Acceptable Use
+You agree not to:
+- Use the service for any illegal purposes
+- Attempt to gain unauthorized access to any systems
+- Upload malicious content or attempt to harm other users
+- Violate any intellectual property rights
+
+## 5. Intellectual Property
+- Content you create using the service remains your intellectual property
+- AI-generated content is provided as a starting point and should be reviewed
+- The IdeaForge platform, trademarks, and technology are owned by us
+
+## 6. Payment and Billing
+- Certain features may require payment
+- All fees are non-refundable unless otherwise stated
+- We reserve the right to change pricing with notice
+
+## 7. Limitation of Liability
+The service is provided "as is" without warranties. We are not liable for any indirect, incidental, or consequential damages.
+
+## 8. Termination
+We may terminate or suspend your account for violations of these terms. You may delete your account at any time.
+
+## 9. Changes to Terms
+We may update these terms periodically. Continued use constitutes acceptance of changes.
+
+## 10. Contact
+For questions about these terms, contact us at legal@ideaforge.com
+"""
+    }
+
+@api_router.get("/legal/privacy")
+async def get_privacy_policy():
+    """Get Privacy Policy"""
+    return {
+        "title": "Privacy Policy",
+        "last_updated": "2025-12-01",
+        "content": """
+# Privacy Policy
+
+## 1. Introduction
+This Privacy Policy explains how IdeaForge ("we", "us", "our") collects, uses, and protects your personal information.
+
+## 2. Information We Collect
+
+### 2.1 Information You Provide
+- Account information (name, email, password)
+- Project data (business ideas, descriptions, documents)
+- Payment information (processed securely by third-party providers)
+
+### 2.2 Information Automatically Collected
+- Usage data (pages visited, features used)
+- Device information (browser type, IP address)
+- Cookies and similar technologies
+
+## 3. How We Use Your Information
+- To provide and improve our services
+- To personalize your experience
+- To process transactions
+- To send service-related communications
+- To ensure security and prevent fraud
+
+## 4. Data Sharing
+We do not sell your personal data. We may share data with:
+- Service providers who assist in our operations
+- Legal authorities when required by law
+- Business partners with your consent
+
+## 5. AI Processing
+- Your project data may be processed by AI systems to generate content
+- AI-generated content is based on your inputs
+- We implement safeguards to protect sensitive information
+
+## 6. Data Security
+We implement industry-standard security measures including:
+- Encryption of data in transit and at rest
+- Regular security audits
+- Access controls and authentication
+- Secure data centers
+
+## 7. Your Rights (GDPR & CCPA)
+You have the right to:
+- Access your personal data
+- Correct inaccurate data
+- Delete your data ("right to be forgotten")
+- Export your data (data portability)
+- Opt out of marketing communications
+- Object to certain processing
+
+## 8. Data Retention
+- We retain your data while your account is active
+- Deleted accounts are purged within 30 days
+- Some data may be retained for legal compliance
+
+## 9. Cookies
+We use cookies for:
+- Essential site functionality
+- Analytics (with consent)
+- Personalization preferences
+
+## 10. Children's Privacy
+Our service is not intended for children under 18. We do not knowingly collect data from minors.
+
+## 11. International Transfers
+Your data may be processed in countries outside your residence. We ensure adequate protection through appropriate safeguards.
+
+## 12. Changes to Policy
+We will notify you of significant changes via email or in-app notification.
+
+## 13. Contact Us
+Data Protection Officer: privacy@ideaforge.com
+Address: [Company Address]
+
+For EU residents: You may lodge a complaint with your local data protection authority.
+"""
+    }
+
+@api_router.get("/legal/cookies")
+async def get_cookie_policy():
+    """Get Cookie Policy"""
+    return {
+        "title": "Cookie Policy",
+        "last_updated": "2025-12-01",
+        "cookies": [
+            {"name": "session", "type": "Essential", "duration": "Session", "purpose": "Maintains user session"},
+            {"name": "auth_token", "type": "Essential", "duration": "24 hours", "purpose": "Authentication"},
+            {"name": "preferences", "type": "Functional", "duration": "1 year", "purpose": "User preferences"},
+            {"name": "analytics", "type": "Analytics", "duration": "2 years", "purpose": "Usage analytics (with consent)"}
+        ],
+        "content": """
+# Cookie Policy
+
+We use cookies to enhance your experience. Essential cookies are required for the site to function. Analytics and marketing cookies are only used with your consent.
+
+You can manage cookie preferences in your account settings or browser settings.
+"""
+    }
+
 # Include router and middleware
 app.include_router(api_router)
 
