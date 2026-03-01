@@ -234,9 +234,13 @@ export default function DocumentHub() {
                     Generated on {formatDate(selectedDoc.created_at)}
                   </p>
                 </div>
+                <Button onClick={handleDownloadPDF} className="bg-primary hover:bg-primary/90" data-testid="download-pdf-btn">
+                  <FileDown className="w-4 h-4 mr-2" />
+                  PDF
+                </Button>
                 <Button onClick={handleDownload} variant="outline" className="border-primary/30" data-testid="download-doc-btn">
                   <Download className="w-4 h-4 mr-2" />
-                  Download
+                  Markdown
                 </Button>
               </div>
               
