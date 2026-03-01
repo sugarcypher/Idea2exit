@@ -362,6 +362,17 @@ export default function LandingPageBuilder() {
   const [style, setStyle] = useState('modern');
   const [viewMode, setViewMode] = useState('desktop');
   const [useAI, setUseAI] = useState(true);
+  
+  // Section toggles - initialized from SECTION_OPTIONS defaults
+  const [sections, setSections] = useState(
+    SECTION_OPTIONS.reduce((acc, opt) => ({ ...acc, [opt.id]: opt.default }), {})
+  );
+
+  const toggleSection = (sectionId) => {
+    setSections(prev => ({ ...prev, [sectionId]: !prev[sectionId] }));
+  };
+
+  const enabledSectionsCount = Object.values(sections).filter(Boolean).length;
 
   useEffect(() => {
     loadData();
