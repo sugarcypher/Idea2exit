@@ -6,33 +6,29 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Zap, ArrowRight, Loader2, FileText, Rocket, DollarSign, Globe, Palette, BarChart3 } from 'lucide-react';
-import { toast } from 'sonner';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
     
     try {
       await login(email, password);
-      try {
-        toast.success('Welcome back!');
-      } catch (toastErr) {
-        console.error('Toast error:', toastErr);
-      }
       navigate('/dashboard');
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (err) {
+      console.error('Login error:', err);
       let errorMessage = 'Login failed. Please check your credentials.';
       
       try {
-        const detail = error.response?.data?.detail;
+        const detail = err.response?.data?.detail;
         if (typeof detail === 'string') {
           errorMessage = detail;
         } else if (Array.isArray(detail) && detail.length > 0) {
@@ -41,16 +37,11 @@ export default function Login() {
             errorMessage = firstError.msg.replace('Value error, ', '');
           }
         }
-      } catch (parseError) {
-        console.error('Error parsing error response:', parseError);
+      } catch (parseErr) {
+        console.error('Error parsing:', parseErr);
       }
       
-      try {
-        toast.error(errorMessage);
-      } catch (toastErr) {
-        console.error('Toast error:', toastErr);
-        alert(errorMessage);
-      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -119,6 +110,13 @@ export default function Login() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">Email</Label>
