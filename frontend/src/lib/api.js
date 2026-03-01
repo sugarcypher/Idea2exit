@@ -20,15 +20,26 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 errors
+// Handle API errors globally
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Handle network errors
+    if (!error.response) {
+      console.error('Network error:', error.message);
+      return Promise.reject(new Error('Network error. Please check your connection.'));
+    }
+    
+    // Handle 401 Unauthorized
+    if (error.response.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      // Only redirect if not already on login/register page
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+        window.location.href = '/login';
+      }
     }
+    
     return Promise.reject(error);
   }
 );
