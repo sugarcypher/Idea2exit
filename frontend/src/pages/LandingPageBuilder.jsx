@@ -533,9 +533,41 @@ export default function LandingPageBuilder() {
               </label>
             </div>
 
+            {/* Section Toggles */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">Page Sections</label>
+                <span className="text-xs text-muted-foreground">{enabledSectionsCount} selected</span>
+              </div>
+              <div className="space-y-2 p-3 rounded-lg bg-secondary/20 border border-border/40">
+                {SECTION_OPTIONS.map((section) => {
+                  const Icon = section.icon;
+                  return (
+                    <div 
+                      key={section.id} 
+                      className="flex items-center justify-between py-1"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon className="w-4 h-4 text-muted-foreground" />
+                        <Label htmlFor={`section-${section.id}`} className="text-sm cursor-pointer">
+                          {section.label}
+                        </Label>
+                      </div>
+                      <Switch
+                        id={`section-${section.id}`}
+                        checked={sections[section.id]}
+                        onCheckedChange={() => toggleSection(section.id)}
+                        data-testid={`toggle-${section.id}`}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             <Button 
               onClick={generateLandingPage}
-              disabled={generating}
+              disabled={generating || enabledSectionsCount === 0}
               className="w-full bg-primary hover:bg-primary/90"
               data-testid="generate-landing-btn"
             >
@@ -556,6 +588,10 @@ export default function LandingPageBuilder() {
                 </>
               )}
             </Button>
+            
+            {enabledSectionsCount === 0 && (
+              <p className="text-xs text-amber-500 text-center">Select at least one section to generate</p>
+            )}
           </div>
 
           {landingPage && (
