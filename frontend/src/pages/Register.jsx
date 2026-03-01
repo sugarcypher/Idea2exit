@@ -34,13 +34,23 @@ export default function Register() {
       toast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (error) {
-      const detail = error.response?.data?.detail;
-      let errorMessage = 'Registration failed';
-      if (typeof detail === 'string') {
-        errorMessage = detail;
-      } else if (Array.isArray(detail)) {
-        errorMessage = detail.map(d => d.msg || d).join(', ');
+      console.error('Registration error:', error);
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      try {
+        const detail = error.response?.data?.detail;
+        if (typeof detail === 'string') {
+          errorMessage = detail;
+        } else if (Array.isArray(detail) && detail.length > 0) {
+          // Handle Pydantic validation errors
+          errorMessage = detail[0]?.msg?.replace('Value error, ', '') || errorMessage;
+        } else if (detail && typeof detail === 'object') {
+          errorMessage = detail.msg || JSON.stringify(detail);
+        }
+      } catch (parseError) {
+        console.error('Error parsing error response:', parseError);
       }
+      
       toast.error(errorMessage);
     } finally {
       setLoading(false);
