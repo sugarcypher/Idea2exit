@@ -32,11 +32,20 @@ Build an app for entrepreneurs/inventors/innovators/creatives with AI agent swar
 - ✅ **Global/Regional Toggle**
 - ✅ Business Prognosis (Success factors, Risks)
 
-### **NEW: Simulation Lab**
+### Simulation Lab
 - ✅ **Financial Simulation** (Funding, Burn rate, MRR, Churn, Revenue projections, Runway, Break-even, Cash flow timeline)
 - ✅ **Market Simulation** (TAM, Market share progression, Competitor analysis, 5-year forecasts)
 - ✅ **Growth Simulation** (Team size, Hiring, Salaries, Budget allocation, Cost breakdown)
 - ✅ **Launch Simulation** (MVP timeline, Beta, Milestones, Velocity, Scope creep, Risk assessment)
+
+### **NEW: Funding & Branding Kit** (Added Dec 2025)
+- ✅ **One-Click Generation** - Generate complete funding kit with single button
+- ✅ **AI Investor Matching** - 10 matched investors (VCs, Angels, Accelerators, Corporate VCs, Family Offices)
+- ✅ **Crowdfunding Strategies** - Platform-specific guides for Kickstarter, Indiegogo, Republic, Wefunder, GoFundMe
+- ✅ **Outreach Templates** - Cold emails, warm intros, follow-ups, pitch scripts, meeting requests
+- ✅ **AI Video Generation** - Promotional videos via Sora 2 (4/8/12 sec, multiple styles)
+- ✅ **AI Logo Generation** - Brand logos via GPT Image 1 (modern, minimal, bold, playful, corporate styles)
+- ✅ **Brand Identity Kit** - Color palette, typography, brand voice, taglines, logo concepts
 
 ### Business Services (UI Ready)
 - Domain & Hosting
@@ -47,7 +56,7 @@ Build an app for entrepreneurs/inventors/innovators/creatives with AI agent swar
 ## Tech Stack
 - Frontend: React 18, Tailwind CSS, Shadcn/UI, jsPDF
 - Backend: FastAPI, MongoDB, JWT
-- AI: OpenAI GPT-5.2 via Emergent LLM Key
+- AI: OpenAI GPT-5.2, GPT Image 1, Sora 2 via Emergent LLM Key
 
 ## API Endpoints
 - POST /api/auth/register, login
@@ -55,9 +64,14 @@ Build an app for entrepreneurs/inventors/innovators/creatives with AI agent swar
 - POST /api/documents/generate
 - POST /api/landing-page/generate
 - POST /api/analysis/generate
+- **POST /api/funding-kit/generate** - One-click funding kit generation
+- **POST /api/funding-kit/generate-logo** - AI logo generation
+- **POST /api/funding-kit/generate-video** - AI video generation
+- **GET /api/funding-kit/{project_id}** - Retrieve funding kit
+- **GET /api/funding-kit/{project_id}/logos** - Get generated logos
+- **GET /api/funding-kit/{project_id}/videos** - Get generated videos
 
 ## Next Action Items (Remaining)
-1. ~~Real-time WebSocket agent updates~~ (deprioritized)
-2. Domain purchasing API integration
-3. Business formation service integration
-4. Project sharing feature
+1. Domain purchasing API integration (GoDaddy/Namecheap)
+2. Business formation service integration (Stripe Atlas/Firstbase)
+3. Project sharing feature for collaboration
