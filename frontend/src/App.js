@@ -1,10 +1,7 @@
 import React from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import ErrorBoundary from "./components/ErrorBoundary";
-import CookieConsent from "./components/CookieConsent";
 
 // Pages
 import Login from "./pages/Login";
