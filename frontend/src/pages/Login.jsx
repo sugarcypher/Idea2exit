@@ -21,7 +21,11 @@ export default function Login() {
     
     try {
       await login(email, password);
-      toast.success('Welcome back!');
+      try {
+        toast.success('Welcome back!');
+      } catch (toastErr) {
+        console.error('Toast error:', toastErr);
+      }
       navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
@@ -32,13 +36,21 @@ export default function Login() {
         if (typeof detail === 'string') {
           errorMessage = detail;
         } else if (Array.isArray(detail) && detail.length > 0) {
-          errorMessage = detail[0]?.msg?.replace('Value error, ', '') || errorMessage;
+          const firstError = detail[0];
+          if (firstError?.msg) {
+            errorMessage = firstError.msg.replace('Value error, ', '');
+          }
         }
       } catch (parseError) {
         console.error('Error parsing error response:', parseError);
       }
       
-      toast.error(errorMessage);
+      try {
+        toast.error(errorMessage);
+      } catch (toastErr) {
+        console.error('Toast error:', toastErr);
+        alert(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
