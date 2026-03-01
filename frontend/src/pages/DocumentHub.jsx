@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import {
   Zap, ArrowLeft, Loader2, FileText, Download, Plus,
   Briefcase, TrendingUp, Megaphone, Shield, Presentation,
-  BookOpen, Check
+  BookOpen, Check, FileDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 
