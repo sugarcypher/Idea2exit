@@ -3,12 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { projectAPI, landingPageAPI } from '../lib/api';
 import { downloadFile } from '../lib/utils';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
-  Zap, ArrowLeft, Loader2, Globe, Download, Monitor,
-  Tablet, Smartphone, Code, Eye, RefreshCw
+  ArrowLeft, Loader2, Globe, Download, Monitor,
+  Tablet, Smartphone, Code, Eye, RefreshCw, Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -19,6 +19,134 @@ const STYLES = [
   { id: 'corporate', label: 'Corporate & Professional' },
 ];
 
+// Fallback template generator
+const generateFallbackTemplate = (project, style) => {
+  const colors = {
+    modern: { primary: '#3B82F6', secondary: '#1E40AF', accent: '#60A5FA' },
+    bold: { primary: '#DC2626', secondary: '#991B1B', accent: '#F87171' },
+    minimal: { primary: '#18181B', secondary: '#27272A', accent: '#71717A' },
+    corporate: { primary: '#0F766E', secondary: '#134E4A', accent: '#14B8A6' },
+  };
+  
+  const c = colors[style] || colors.modern;
+  
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${project.name}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">${project.name}</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+                <a href="#contact" class="cta-btn">Get Started</a>
+            </div>
+        </div>
+    </nav>
+    
+    <header class="hero">
+        <div class="hero-content">
+            <h1>${project.name}</h1>
+            <p class="tagline">${project.description}</p>
+            <div class="hero-buttons">
+                <a href="#contact" class="btn-primary">Get Started</a>
+                <a href="#features" class="btn-secondary">Learn More</a>
+            </div>
+        </div>
+    </header>
+    
+    <section id="features" class="features">
+        <div class="container">
+            <h2>Why Choose Us</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">✨</div>
+                    <h3>Innovative Solution</h3>
+                    <p>${project.solution}</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Our Vision</h3>
+                    <p>${project.vision}</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Target Market</h3>
+                    <p>${project.target_market}</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="about" class="about">
+        <div class="container">
+            <h2>The Problem We Solve</h2>
+            <p>${project.problem_statement}</p>
+        </div>
+    </section>
+    
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2>Ready to Get Started?</h2>
+            <p>Join us in revolutionizing the ${project.industry || 'industry'}</p>
+            <a href="mailto:contact@${project.name.toLowerCase().replace(/\s+/g, '')}.com" class="btn-primary">Contact Us</a>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 ${project.name}. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>`;
+
+  const css = `* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; line-height: 1.6; color: #1a1a1a; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+.navbar { position: fixed; top: 0; left: 0; right: 0; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; }
+.nav-container { max-width: 1200px; margin: 0 auto; padding: 1rem 20px; display: flex; justify-content: space-between; align-items: center; }
+.logo { font-size: 1.5rem; font-weight: 700; color: ${c.primary}; }
+.nav-links { display: flex; gap: 2rem; align-items: center; }
+.nav-links a { text-decoration: none; color: #4a4a4a; font-weight: 500; transition: color 0.3s; }
+.nav-links a:hover { color: ${c.primary}; }
+.cta-btn { background: ${c.primary}; color: white !important; padding: 0.5rem 1.5rem; border-radius: 8px; }
+.cta-btn:hover { background: ${c.secondary}; }
+.hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, ${c.primary} 0%, ${c.secondary} 100%); color: white; text-align: center; padding: 6rem 2rem 4rem; }
+.hero-content { max-width: 800px; }
+.hero h1 { font-size: 3.5rem; font-weight: 700; margin-bottom: 1.5rem; }
+.tagline { font-size: 1.25rem; opacity: 0.9; margin-bottom: 2rem; }
+.hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.btn-primary { background: white; color: ${c.primary}; padding: 1rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600; transition: transform 0.3s, box-shadow 0.3s; display: inline-block; }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.btn-secondary { background: transparent; color: white; padding: 1rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600; border: 2px solid white; display: inline-block; transition: background 0.3s; }
+.btn-secondary:hover { background: rgba(255,255,255,0.1); }
+.features { padding: 6rem 0; background: #f8f9fa; }
+.features h2, .about h2, .contact h2 { font-size: 2.5rem; text-align: center; margin-bottom: 3rem; color: #1a1a1a; }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+.feature-card { background: white; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.3s, box-shadow 0.3s; }
+.feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 40px rgba(0,0,0,0.12); }
+.feature-icon { font-size: 3rem; margin-bottom: 1rem; }
+.feature-card h3 { color: ${c.primary}; margin-bottom: 1rem; font-size: 1.25rem; }
+.feature-card p { color: #666; }
+.about { padding: 6rem 0; text-align: center; }
+.about p { max-width: 800px; margin: 0 auto; font-size: 1.1rem; color: #4a4a4a; }
+.contact { padding: 6rem 0; background: linear-gradient(135deg, ${c.primary} 0%, ${c.secondary} 100%); color: white; text-align: center; }
+.contact h2 { color: white; }
+.contact p { margin-bottom: 2rem; opacity: 0.9; }
+.contact .btn-primary { background: white; color: ${c.primary}; }
+footer { background: #1a1a1a; color: white; text-align: center; padding: 2rem; }
+@media (max-width: 768px) { .hero h1 { font-size: 2.5rem; } .nav-links { display: none; } }`;
+
+  return { html, css };
+};
+
 export default function LandingPageBuilder() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -28,9 +156,11 @@ export default function LandingPageBuilder() {
   const [generating, setGenerating] = useState(false);
   const [style, setStyle] = useState('modern');
   const [viewMode, setViewMode] = useState('desktop');
+  const [useAI, setUseAI] = useState(true);
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const loadData = async () => {
@@ -54,15 +184,34 @@ export default function LandingPageBuilder() {
 
   const generateLandingPage = async () => {
     setGenerating(true);
+    
     try {
-      const response = await landingPageAPI.generate({
-        project_id: id,
-        style: style
-      });
-      setLandingPage(response.data);
-      toast.success('Landing page generated!');
+      if (useAI) {
+        // Try AI generation first
+        const response = await landingPageAPI.generate({
+          project_id: id,
+          style: style
+        });
+        setLandingPage(response.data);
+        toast.success('AI-powered landing page generated!');
+      } else {
+        throw new Error('Use template');
+      }
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to generate landing page');
+      // Fallback to template
+      console.log('Using fallback template');
+      const { html, css } = generateFallbackTemplate(project, style);
+      const previewHtml = html.replace('</head>', `<style>${css}</style></head>`);
+      
+      setLandingPage({
+        id: 'local-' + Date.now(),
+        project_id: id,
+        html_content: html,
+        css_content: css,
+        preview_html: previewHtml,
+        created_at: new Date().toISOString()
+      });
+      toast.success('Landing page generated from template!');
     } finally {
       setGenerating(false);
     }
@@ -78,13 +227,6 @@ export default function LandingPageBuilder() {
     if (!landingPage) return;
     downloadFile(landingPage.css_content, 'styles.css', 'text/css');
     toast.success('CSS file downloaded');
-  };
-
-  const handleDownloadAll = () => {
-    if (!landingPage) return;
-    // Download combined HTML with embedded CSS
-    downloadFile(landingPage.preview_html, `${project.name.replace(/\s+/g, '_')}_landing_complete.html`, 'text/html');
-    toast.success('Complete landing page downloaded');
   };
 
   const getPreviewWidth = () => {
@@ -125,7 +267,7 @@ export default function LandingPageBuilder() {
           
           {landingPage && (
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" onClick={handleDownloadAll} className="border-primary/30" data-testid="download-all-btn">
+              <Button variant="outline" size="sm" onClick={handleDownloadHTML} className="border-primary/30" data-testid="download-all-btn">
                 <Download className="w-4 h-4 mr-2" />
                 Export HTML
               </Button>
@@ -143,7 +285,7 @@ export default function LandingPageBuilder() {
             <div className="space-y-2">
               <label className="text-sm text-muted-foreground">Style</label>
               <Select value={style} onValueChange={setStyle}>
-                <SelectTrigger className="custom-input" data-testid="style-select">
+                <SelectTrigger className="bg-secondary/50 border-border/50" data-testid="style-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -154,10 +296,24 @@ export default function LandingPageBuilder() {
               </Select>
             </div>
 
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 border border-border/40">
+              <input 
+                type="checkbox" 
+                id="useAI" 
+                checked={useAI} 
+                onChange={(e) => setUseAI(e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <label htmlFor="useAI" className="text-sm flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                Use AI Generation
+              </label>
+            </div>
+
             <Button 
               onClick={generateLandingPage}
               disabled={generating}
-              className="w-full btn-glow"
+              className="w-full bg-primary hover:bg-primary/90"
               data-testid="generate-landing-btn"
             >
               {generating ? (
@@ -258,7 +414,7 @@ export default function LandingPageBuilder() {
               
               <TabsContent value="preview" className="flex-1 p-6 overflow-auto">
                 <div className={`mx-auto transition-all duration-300 ${getPreviewWidth()}`}>
-                  <div className="preview-frame rounded-lg overflow-hidden shadow-2xl">
+                  <div className="rounded-lg overflow-hidden shadow-2xl border border-border/40">
                     <iframe
                       srcDoc={landingPage.preview_html}
                       title="Landing Page Preview"
@@ -303,7 +459,7 @@ export default function LandingPageBuilder() {
                 <Button 
                   onClick={generateLandingPage}
                   disabled={generating}
-                  className="btn-glow"
+                  className="bg-primary hover:bg-primary/90"
                   size="lg"
                   data-testid="empty-generate-btn"
                 >
