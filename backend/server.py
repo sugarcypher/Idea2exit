@@ -138,6 +138,69 @@ class AnalysisResponse(BaseModel):
     business_prognosis: Dict[str, Any]
     created_at: str
 
+# ==================== FUNDING KIT MODELS ====================
+
+class FundingKitRequest(BaseModel):
+    project_id: str
+    include_investors: bool = True
+    include_crowdfunding: bool = True
+    include_outreach: bool = True
+    include_video: bool = True
+    include_branding: bool = True
+    video_duration: int = 4  # 4, 8, or 12 seconds
+    logo_styles: List[str] = ["modern", "minimal", "bold"]
+
+class InvestorProfile(BaseModel):
+    name: str
+    type: str  # VC, Angel, Accelerator, etc.
+    focus_areas: List[str]
+    typical_check_size: str
+    stage_preference: str
+    contact_method: str
+    website: Optional[str] = None
+    notes: str
+
+class CrowdfundingStrategy(BaseModel):
+    platform: str
+    recommended_goal: str
+    campaign_duration: str
+    reward_tiers: List[Dict[str, Any]]
+    tips: List[str]
+    timeline: List[Dict[str, str]]
+
+class OutreachTemplate(BaseModel):
+    type: str  # cold_email, warm_intro, follow_up, pitch_script
+    subject: Optional[str] = None
+    content: str
+    tips: List[str]
+
+class BrandAsset(BaseModel):
+    type: str  # logo, color_palette, typography, guidelines
+    name: str
+    data: Any  # base64 for images, dict for others
+    description: str
+
+class FundingKitResponse(BaseModel):
+    id: str
+    project_id: str
+    investors: List[InvestorProfile]
+    crowdfunding_strategies: List[CrowdfundingStrategy]
+    outreach_templates: List[OutreachTemplate]
+    pitch_video_script: str
+    pitch_video_url: Optional[str] = None
+    brand_assets: List[BrandAsset]
+    status: str
+    created_at: str
+
+class LogoGenerationRequest(BaseModel):
+    project_id: str
+    style: str = "modern"  # modern, minimal, bold, playful, corporate
+
+class VideoGenerationRequest(BaseModel):
+    project_id: str
+    duration: int = 4  # 4, 8, or 12 seconds
+    style: str = "professional"  # professional, energetic, cinematic
+
 # ==================== AUTH UTILITIES ====================
 
 def hash_password(password: str) -> str:
