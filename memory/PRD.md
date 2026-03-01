@@ -6,10 +6,12 @@ Build an app for entrepreneurs/inventors/innovators/creatives with AI agent swar
 ## What's Implemented
 
 ### Core Features
-- ✅ JWT Authentication (register/login)
+- ✅ JWT Authentication (register/login) - **Bug Fixed Dec 2025**
 - ✅ 4-Step Project Creation Wizard
 - ✅ AI Agent Swarm (9 agents: manager, specialists, workers)
 - ✅ Workflow Progress Indicator (5 steps)
+- ✅ ErrorBoundary for graceful error handling
+- ✅ Robust localStorage error handling in AuthContext
 
 ### Document Generation
 - ✅ 6 Document Types (White Paper, Business Plan, Pitch Deck, Market Research, Marketing Strategy, IP Protection)
