@@ -145,12 +145,45 @@ export default function Register() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
                   className="custom-input h-11"
                   data-testid="register-password-input"
                 />
-                <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
+                <p className="text-xs text-muted-foreground">Min 8 chars, uppercase, lowercase, number, special char</p>
               </div>
+              
+              {/* Terms & Privacy Checkboxes */}
+              <div className="space-y-3">
+                <div className="flex items-start space-x-2">
+                  <Checkbox 
+                    id="terms" 
+                    checked={acceptedTerms}
+                    onCheckedChange={setAcceptedTerms}
+                    data-testid="accept-terms-checkbox"
+                  />
+                  <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight cursor-pointer">
+                    I agree to the{' '}
+                    <Link to="/terms" className="text-primary hover:underline" target="_blank">
+                      Terms of Service
+                    </Link>
+                  </label>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <Checkbox 
+                    id="privacy" 
+                    checked={acceptedPrivacy}
+                    onCheckedChange={setAcceptedPrivacy}
+                    data-testid="accept-privacy-checkbox"
+                  />
+                  <label htmlFor="privacy" className="text-sm text-muted-foreground leading-tight cursor-pointer">
+                    I agree to the{' '}
+                    <Link to="/privacy" className="text-primary hover:underline" target="_blank">
+                      Privacy Policy
+                    </Link>
+                  </label>
+                </div>
+              </div>
+              
               <Button 
                 type="submit" 
                 className="w-full h-11 btn-glow font-medium"
