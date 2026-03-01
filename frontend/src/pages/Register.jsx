@@ -22,7 +22,12 @@ export default function Register() {
     e.preventDefault();
     
     if (!acceptedTerms || !acceptedPrivacy) {
-      toast.error('Please accept the Terms of Service and Privacy Policy');
+      try {
+        toast.error('Please accept the Terms of Service and Privacy Policy');
+      } catch (toastErr) {
+        console.error('Toast error:', toastErr);
+        alert('Please accept the Terms of Service and Privacy Policy');
+      }
       return;
     }
     
@@ -30,7 +35,11 @@ export default function Register() {
     
     try {
       await register(email, password, fullName, acceptedTerms, acceptedPrivacy);
-      toast.success('Account created successfully!');
+      try {
+        toast.success('Account created successfully!');
+      } catch (toastErr) {
+        console.error('Toast error:', toastErr);
+      }
       navigate('/dashboard');
     } catch (error) {
       console.error('Registration error:', error);
@@ -42,15 +51,23 @@ export default function Register() {
           errorMessage = detail;
         } else if (Array.isArray(detail) && detail.length > 0) {
           // Handle Pydantic validation errors
-          errorMessage = detail[0]?.msg?.replace('Value error, ', '') || errorMessage;
-        } else if (detail && typeof detail === 'object') {
-          errorMessage = detail.msg || JSON.stringify(detail);
+          const firstError = detail[0];
+          if (firstError?.msg) {
+            errorMessage = firstError.msg.replace('Value error, ', '');
+          }
+        } else if (detail && typeof detail === 'object' && detail.msg) {
+          errorMessage = detail.msg;
         }
       } catch (parseError) {
         console.error('Error parsing error response:', parseError);
       }
       
-      toast.error(errorMessage);
+      try {
+        toast.error(errorMessage);
+      } catch (toastErr) {
+        console.error('Toast error:', toastErr);
+        alert(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
