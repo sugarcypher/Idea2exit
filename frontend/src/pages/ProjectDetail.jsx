@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { projectAPI, documentAPI } from '../lib/api';
-import { formatDate, getAgentRoleColor, getAgentStatusColor } from '../lib/utils';
+import { formatDate } from '../lib/utils';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Progress } from '../components/ui/progress';
+import WorkflowProgress from '../components/WorkflowProgress';
 import {
   Zap, ArrowLeft, Loader2, Users, FileText, Globe, TrendingUp,
   Briefcase, Target, Puzzle, Clock, Trash2, Activity, 
-  CheckCircle2, AlertCircle, Circle
+  CheckCircle2, AlertCircle, Circle, ExternalLink, 
+  Building2, Shield, CreditCard, Share2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -24,6 +25,7 @@ export default function ProjectDetail() {
 
   useEffect(() => {
     loadProject();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const loadProject = async () => {
@@ -66,6 +68,22 @@ export default function ProjectDetail() {
     }
   };
 
+  // Determine completed workflow steps
+  const getCompletedSteps = () => {
+    const completed = ['project'];
+    if (documents.length > 0) completed.push('documents');
+    // Add more logic based on landing page and analysis
+    return completed;
+  };
+
+  const getCurrentStep = () => {
+    const completed = getCompletedSteps();
+    if (completed.includes('analysis')) return 'launch';
+    if (completed.includes('landing')) return 'analysis';
+    if (completed.includes('documents')) return 'landing';
+    return 'documents';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -79,6 +97,42 @@ export default function ProjectDetail() {
   const managers = project.agents?.filter(a => a.role === 'manager') || [];
   const specialists = project.agents?.filter(a => a.role === 'specialist') || [];
   const workers = project.agents?.filter(a => a.role === 'worker') || [];
+
+  // Business services (future integrations)
+  const businessServices = [
+    { 
+      id: 'domain', 
+      name: 'Domain & Hosting', 
+      description: 'Register domain and set up hosting',
+      icon: Globe, 
+      status: 'available',
+      action: 'Purchase Domain'
+    },
+    { 
+      id: 'formation', 
+      name: 'Business Formation', 
+      description: 'LLC, Corp, or other entity setup',
+      icon: Building2, 
+      status: 'available',
+      action: 'Start Formation'
+    },
+    { 
+      id: 'trademark', 
+      name: 'Trademark Filing', 
+      description: 'Protect your brand name and logo',
+      icon: Shield, 
+      status: 'available',
+      action: 'File Trademark'
+    },
+    { 
+      id: 'banking', 
+      name: 'Business Banking', 
+      description: 'Open a business bank account',
+      icon: CreditCard, 
+      status: 'coming_soon',
+      action: 'Coming Soon'
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background" data-testid="project-detail-page">
@@ -115,12 +169,27 @@ export default function ProjectDetail() {
       </header>
 
       <main className="max-w-[1400px] mx-auto px-6 py-8">
+        {/* Workflow Progress */}
+        <Card className="glass-card border-border/40 mb-8">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Your Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <WorkflowProgress 
+              projectId={id}
+              currentStep={getCurrentStep()}
+              completedSteps={getCompletedSteps()}
+            />
+          </CardContent>
+        </Card>
+
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="bg-card/50 border border-border/40 p-1">
             <TabsTrigger value="overview" data-testid="tab-overview">Overview</TabsTrigger>
             <TabsTrigger value="agents" data-testid="tab-agents">AI Agents</TabsTrigger>
             <TabsTrigger value="documents" data-testid="tab-documents">Documents</TabsTrigger>
             <TabsTrigger value="tools" data-testid="tab-tools">Tools</TabsTrigger>
+            <TabsTrigger value="services" data-testid="tab-services">Business Services</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -129,26 +198,26 @@ export default function ProjectDetail() {
               {/* Project Info */}
               <Card className="lg:col-span-2 glass-card border-border/40">
                 <CardHeader>
-                  <CardTitle className="heading-3 flex items-center gap-2">
+                  <CardTitle className="text-xl flex items-center gap-2">
                     <Briefcase className="w-5 h-5 text-primary" />
                     Project Details
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <span className="caption-text">Description</span>
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Description</span>
                     <p className="mt-2 text-muted-foreground">{project.description}</p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <span className="caption-text flex items-center gap-2">
+                      <span className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                         <Target className="w-3 h-3" />
                         Vision
                       </span>
                       <p className="mt-2 text-muted-foreground text-sm">{project.vision}</p>
                     </div>
                     <div>
-                      <span className="caption-text flex items-center gap-2">
+                      <span className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                         <Users className="w-3 h-3" />
                         Target Market
                       </span>
@@ -156,14 +225,14 @@ export default function ProjectDetail() {
                     </div>
                   </div>
                   <div>
-                    <span className="caption-text flex items-center gap-2">
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                       <Puzzle className="w-3 h-3" />
                       Problem Statement
                     </span>
                     <p className="mt-2 text-muted-foreground text-sm">{project.problem_statement}</p>
                   </div>
                   <div>
-                    <span className="caption-text flex items-center gap-2">
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                       <Zap className="w-3 h-3" />
                       Solution
                     </span>
@@ -177,7 +246,7 @@ export default function ProjectDetail() {
                 <Card className="glass-card border-border/40">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="caption-text">Created</span>
+                      <span className="text-xs uppercase tracking-wider text-muted-foreground">Created</span>
                       <Clock className="w-4 h-4 text-muted-foreground" />
                     </div>
                     <p className="font-medium">{formatDate(project.created_at)}</p>
@@ -186,19 +255,19 @@ export default function ProjectDetail() {
                 <Card className="glass-card border-border/40">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="caption-text">Documents</span>
+                      <span className="text-xs uppercase tracking-wider text-muted-foreground">Documents</span>
                       <FileText className="w-4 h-4 text-purple-400" />
                     </div>
-                    <p className="metric-text text-purple-400">{documents.length}</p>
+                    <p className="text-3xl font-bold text-purple-400 font-mono">{documents.length}</p>
                   </CardContent>
                 </Card>
                 <Card className="glass-card border-border/40">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="caption-text">AI Agents</span>
+                      <span className="text-xs uppercase tracking-wider text-muted-foreground">AI Agents</span>
                       <Users className="w-4 h-4 text-primary" />
                     </div>
-                    <p className="metric-text text-primary">{project.agents?.length || 0}</p>
+                    <p className="text-3xl font-bold text-primary font-mono">{project.agents?.length || 0}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -285,10 +354,10 @@ export default function ProjectDetail() {
           {/* Documents Tab */}
           <TabsContent value="documents" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h3 className="heading-3">Generated Documents</h3>
+              <h3 className="text-xl font-semibold">Generated Documents</h3>
               <Button 
                 onClick={() => navigate(`/projects/${id}/documents`)}
-                className="btn-glow"
+                className="bg-primary hover:bg-primary/90"
                 data-testid="generate-docs-btn"
               >
                 <FileText className="w-4 h-4 mr-2" />
@@ -386,12 +455,66 @@ export default function ProjectDetail() {
                   <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
                     <TrendingUp className="w-6 h-6 text-emerald-400" />
                   </div>
-                  <h3 className="font-semibold mb-2">Analysis & Projections</h3>
+                  <h3 className="font-semibold mb-2">Analytics & Projections</h3>
                   <p className="text-sm text-muted-foreground">
-                    Get financial projections, timeline estimates, and market analysis.
+                    Get comprehensive business analysis and financial projections.
                   </p>
                 </CardContent>
               </Card>
+            </div>
+          </TabsContent>
+
+          {/* Business Services Tab */}
+          <TabsContent value="services" className="space-y-6">
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold mb-2">Business Services</h3>
+              <p className="text-muted-foreground">Launch and scale your business with our partner services</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {businessServices.map((service) => {
+                const Icon = service.icon;
+                const isComingSoon = service.status === 'coming_soon';
+                
+                return (
+                  <Card 
+                    key={service.id}
+                    className={`glass-card border-border/40 ${!isComingSoon ? 'cursor-pointer hover:border-primary/30' : 'opacity-70'} transition-all duration-200`}
+                    data-testid={`service-${service.id}`}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <Icon className="w-6 h-6 text-primary" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold mb-1">{service.name}</h4>
+                            <p className="text-sm text-muted-foreground">{service.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-border/40">
+                        <Button 
+                          variant={isComingSoon ? 'ghost' : 'outline'}
+                          size="sm"
+                          className={isComingSoon ? 'text-muted-foreground' : 'border-primary/30 hover:bg-primary/10'}
+                          disabled={isComingSoon}
+                        >
+                          {isComingSoon ? (
+                            'Coming Soon'
+                          ) : (
+                            <>
+                              {service.action}
+                              <ExternalLink className="w-3 h-3 ml-2" />
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </TabsContent>
         </Tabs>
