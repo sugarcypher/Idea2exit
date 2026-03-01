@@ -79,6 +79,16 @@ export const analysisAPI = {
   get: (projectId) => api.get(`/analysis/${projectId}`),
 };
 
+// Funding Kit APIs
+export const fundingKitAPI = {
+  generate: (data) => api.post('/funding-kit/generate', data, { timeout: 120000 }),
+  get: (projectId) => api.get(`/funding-kit/${projectId}`),
+  generateLogo: (data) => api.post('/funding-kit/generate-logo', data, { timeout: 120000 }),
+  generateVideo: (data) => api.post('/funding-kit/generate-video', data, { timeout: 600000 }),
+  getLogos: (projectId) => api.get(`/funding-kit/${projectId}/logos`),
+  getVideos: (projectId) => api.get(`/funding-kit/${projectId}/videos`),
+};
+
 // Health check
 export const healthAPI = {
   check: () => api.get('/health'),
