@@ -11,7 +11,7 @@ import {
   Zap, ArrowLeft, Loader2, Users, FileText, Globe, TrendingUp,
   Briefcase, Target, Puzzle, Clock, Trash2, Activity, 
   CheckCircle2, AlertCircle, Circle, ExternalLink, 
-  Building2, Shield, CreditCard, Share2
+  Building2, Shield, CreditCard, Calculator
 } from 'lucide-react';
 import { toast } from 'sonner';
 
