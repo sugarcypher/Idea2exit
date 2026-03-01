@@ -401,12 +401,19 @@ export default function LandingPageBuilder() {
   const generateLandingPage = async () => {
     setGenerating(true);
     
+    // Get enabled section names for AI prompt
+    const enabledSections = Object.entries(sections)
+      .filter(([_, enabled]) => enabled)
+      .map(([id]) => SECTION_OPTIONS.find(o => o.id === id)?.label)
+      .filter(Boolean);
+    
     try {
       if (useAI) {
-        // Try AI generation first
+        // Try AI generation first with section preferences
         const response = await landingPageAPI.generate({
           project_id: id,
-          style: style
+          style: style,
+          sections: enabledSections
         });
         setLandingPage(response.data);
         toast.success('AI-powered landing page generated!');
@@ -414,9 +421,9 @@ export default function LandingPageBuilder() {
         throw new Error('Use template');
       }
     } catch (error) {
-      // Fallback to template
+      // Fallback to template with section toggles
       console.log('Using fallback template');
-      const { html, css } = generateFallbackTemplate(project, style);
+      const { html, css } = generateFallbackTemplate(project, style, sections);
       const previewHtml = html.replace('</head>', `<style>${css}</style></head>`);
       
       setLandingPage({
