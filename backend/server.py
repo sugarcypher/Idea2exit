@@ -987,7 +987,7 @@ Industry: {project['industry']}
             response = await generate_with_llm(INVESTOR_PROMPT, project_context, f"investors-{request.project_id}")
             try:
                 investors = json.loads(response)
-            except:
+            except json.JSONDecodeError:
                 match = re.search(r'\[.*\]', response, re.DOTALL)
                 investors = json.loads(match.group()) if match else []
             results["investors"] = investors
@@ -1000,7 +1000,7 @@ Industry: {project['industry']}
             response = await generate_with_llm(CROWDFUNDING_PROMPT, project_context, f"crowdfunding-{request.project_id}")
             try:
                 strategies = json.loads(response)
-            except:
+            except json.JSONDecodeError:
                 match = re.search(r'\[.*\]', response, re.DOTALL)
                 strategies = json.loads(match.group()) if match else []
             results["crowdfunding_strategies"] = strategies
@@ -1013,7 +1013,7 @@ Industry: {project['industry']}
             response = await generate_with_llm(OUTREACH_PROMPT, project_context, f"outreach-{request.project_id}")
             try:
                 templates = json.loads(response)
-            except:
+            except json.JSONDecodeError:
                 match = re.search(r'\[.*\]', response, re.DOTALL)
                 templates = json.loads(match.group()) if match else []
             results["outreach_templates"] = templates
@@ -1035,7 +1035,7 @@ Industry: {project['industry']}
             response = await generate_with_llm(BRAND_PROMPT, project_context, f"brand-{request.project_id}")
             try:
                 brand_data = json.loads(response)
-            except:
+            except json.JSONDecodeError:
                 match = re.search(r'\{.*\}', response, re.DOTALL)
                 brand_data = json.loads(match.group()) if match else {}
             
