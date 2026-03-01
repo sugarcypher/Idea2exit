@@ -103,10 +103,22 @@ def validate_password_strength(password: str) -> tuple[bool, str]:
         return False, "Password must contain at least one special character (!@#$%^&*(),.?\":{}|<>)"
     return True, "Password meets requirements"
 
+# ==================== MODELS ====================
+
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str
+    accepted_terms: bool = False
+    accepted_privacy: bool = False
+    
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v):
+        is_valid, message = validate_password_strength(v)
+        if not is_valid:
+            raise ValueError(message)
+        return v
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -116,7 +128,18 @@ class UserResponse(BaseModel):
     id: str
     email: str
     full_name: str
+    role: str = "user"
     created_at: str
+
+class UserPreferences(BaseModel):
+    email_notifications: bool = True
+    marketing_emails: bool = False
+    product_updates: bool = True
+    security_alerts: bool = True
+
+class ConsentUpdate(BaseModel):
+    consent_type: str  # marketing, analytics, third_party
+    granted: bool
 
 class TokenResponse(BaseModel):
     access_token: str
