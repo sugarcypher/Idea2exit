@@ -91,17 +91,13 @@ function AppRoutes() {
 
 function App() {
   return (
-    <ErrorBoundary>
-      <div className="App">
-        <BrowserRouter>
-          <AuthProvider>
-            <AppRoutes />
-            <Toaster position="top-right" richColors theme="dark" />
-            <CookieConsent />
-          </AuthProvider>
-        </BrowserRouter>
-      </div>
-    </ErrorBoundary>
+    <div className="App">
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </div>
   );
 }
 
