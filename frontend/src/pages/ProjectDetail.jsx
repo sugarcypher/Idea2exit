@@ -461,6 +461,22 @@ export default function ProjectDetail() {
                   </p>
                 </CardContent>
               </Card>
+
+              <Card 
+                className="glass-card border-border/40 cursor-pointer hover:border-primary/30 transition-all duration-200"
+                onClick={() => navigate(`/projects/${id}/simulation`)}
+                data-testid="tool-simulation"
+              >
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center mb-4">
+                    <Calculator className="w-6 h-6 text-orange-400" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Simulation Lab</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Run what-if scenarios for financial, market, growth, and launch planning.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
