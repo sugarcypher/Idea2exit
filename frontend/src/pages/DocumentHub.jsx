@@ -78,7 +78,13 @@ export default function DocumentHub() {
     if (!selectedDoc) return;
     const filename = `${selectedDoc.title.replace(/\s+/g, '_')}.md`;
     downloadFile(selectedDoc.content, filename, 'text/markdown');
-    toast.success('Document downloaded');
+    toast.success('Markdown downloaded');
+  };
+
+  const handleDownloadPDF = () => {
+    if (!selectedDoc) return;
+    downloadPDF(selectedDoc.content, selectedDoc.title, selectedDoc.document_type);
+    toast.success('PDF downloaded');
   };
 
   const getExistingTypes = () => {
