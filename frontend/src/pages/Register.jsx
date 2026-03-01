@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Checkbox } from '../components/ui/checkbox';
 import { Zap, ArrowRight, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -12,16 +13,24 @@ export default function Register() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!acceptedTerms || !acceptedPrivacy) {
+      toast.error('Please accept the Terms of Service and Privacy Policy');
+      return;
+    }
+    
     setLoading(true);
     
     try {
-      await register(email, password, fullName);
+      await register(email, password, fullName, acceptedTerms, acceptedPrivacy);
       toast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (error) {
