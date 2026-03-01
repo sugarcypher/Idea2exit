@@ -6,9 +6,12 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Switch } from '../components/ui/switch';
+import { Label } from '../components/ui/label';
 import {
   ArrowLeft, Loader2, Globe, Download, Monitor,
-  Tablet, Smartphone, Code, Eye, RefreshCw, Sparkles
+  Tablet, Smartphone, Code, Eye, RefreshCw, Sparkles,
+  Layout, Star, Users, HelpCircle, DollarSign, MessageSquare, Mail, Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -17,6 +20,18 @@ const STYLES = [
   { id: 'bold', label: 'Bold & Dynamic' },
   { id: 'minimal', label: 'Minimal & Elegant' },
   { id: 'corporate', label: 'Corporate & Professional' },
+];
+
+const SECTION_OPTIONS = [
+  { id: 'hero', label: 'Hero Section', icon: Layout, default: true },
+  { id: 'features', label: 'Features', icon: Star, default: true },
+  { id: 'problem', label: 'Problem & Solution', icon: HelpCircle, default: true },
+  { id: 'howItWorks', label: 'How It Works', icon: Zap, default: false },
+  { id: 'testimonials', label: 'Testimonials', icon: Users, default: false },
+  { id: 'pricing', label: 'Pricing', icon: DollarSign, default: false },
+  { id: 'faq', label: 'FAQ', icon: MessageSquare, default: false },
+  { id: 'cta', label: 'Call to Action', icon: Sparkles, default: true },
+  { id: 'contact', label: 'Contact Form', icon: Mail, default: true },
 ];
 
 // Fallback template generator
