@@ -6,7 +6,6 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Zap, ArrowRight, Loader2, Check } from 'lucide-react';
-import { toast } from 'sonner';
 
 export default function Register() {
   const [fullName, setFullName] = useState('');
@@ -15,19 +14,18 @@ export default function Register() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
     
     if (!acceptedTerms || !acceptedPrivacy) {
-      try {
-        toast.error('Please accept the Terms of Service and Privacy Policy');
-      } catch (toastErr) {
-        console.error('Toast error:', toastErr);
-        alert('Please accept the Terms of Service and Privacy Policy');
-      }
+      setError('Please accept the Terms of Service and Privacy Policy');
       return;
     }
     
@@ -35,39 +33,29 @@ export default function Register() {
     
     try {
       await register(email, password, fullName, acceptedTerms, acceptedPrivacy);
-      try {
-        toast.success('Account created successfully!');
-      } catch (toastErr) {
-        console.error('Toast error:', toastErr);
-      }
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Registration error:', error);
+      setSuccess('Account created successfully!');
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 500);
+    } catch (err) {
+      console.error('Registration error:', err);
       let errorMessage = 'Registration failed. Please try again.';
       
       try {
-        const detail = error.response?.data?.detail;
+        const detail = err.response?.data?.detail;
         if (typeof detail === 'string') {
           errorMessage = detail;
         } else if (Array.isArray(detail) && detail.length > 0) {
-          // Handle Pydantic validation errors
           const firstError = detail[0];
           if (firstError?.msg) {
             errorMessage = firstError.msg.replace('Value error, ', '');
           }
-        } else if (detail && typeof detail === 'object' && detail.msg) {
-          errorMessage = detail.msg;
         }
-      } catch (parseError) {
-        console.error('Error parsing error response:', parseError);
+      } catch (parseErr) {
+        console.error('Error parsing:', parseErr);
       }
       
-      try {
-        toast.error(errorMessage);
-      } catch (toastErr) {
-        console.error('Toast error:', toastErr);
-        alert(errorMessage);
-      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -75,10 +63,10 @@ export default function Register() {
 
   const features = [
     'Generate white papers & business plans',
-    'AI-powered market research',
     'Pitch deck creation',
-    'Landing page builder',
     'IP protection guidance',
+    'AI-powered market research',
+    'Landing page builder',
     'Financial projections',
   ];
 
@@ -106,11 +94,9 @@ export default function Register() {
           </p>
           <div className="grid grid-cols-2 gap-3">
             {features.map((feature, index) => (
-              <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <Check className="w-3 h-3 text-primary" />
-                </div>
-                <span>{feature}</span>
+              <div key={index} className="flex items-center gap-2 text-muted-foreground">
+                <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                <span className="text-sm">{feature}</span>
               </div>
             ))}
           </div>
@@ -135,6 +121,18 @@ export default function Register() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Success/Error Messages */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-sm">
+                {success}
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
@@ -180,38 +178,36 @@ export default function Register() {
               
               {/* Terms & Privacy Checkboxes */}
               <div className="space-y-3">
-                <div className="flex items-start space-x-3">
+                <label className="flex items-start space-x-3 cursor-pointer">
                   <input 
                     type="checkbox"
-                    id="terms" 
                     checked={acceptedTerms}
                     onChange={(e) => setAcceptedTerms(e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded border-gray-600 bg-gray-800 text-primary focus:ring-primary focus:ring-offset-gray-900"
+                    className="mt-1 h-4 w-4 rounded border-gray-600 bg-gray-800 text-primary focus:ring-primary"
                     data-testid="accept-terms-checkbox"
                   />
-                  <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight cursor-pointer">
+                  <span className="text-sm text-muted-foreground leading-tight">
                     I agree to the{' '}
-                    <Link to="/terms" className="text-primary hover:underline" target="_blank">
+                    <Link to="/terms" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
                       Terms of Service
                     </Link>
-                  </label>
-                </div>
-                <div className="flex items-start space-x-3">
+                  </span>
+                </label>
+                <label className="flex items-start space-x-3 cursor-pointer">
                   <input 
                     type="checkbox"
-                    id="privacy" 
                     checked={acceptedPrivacy}
                     onChange={(e) => setAcceptedPrivacy(e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded border-gray-600 bg-gray-800 text-primary focus:ring-primary focus:ring-offset-gray-900"
+                    className="mt-1 h-4 w-4 rounded border-gray-600 bg-gray-800 text-primary focus:ring-primary"
                     data-testid="accept-privacy-checkbox"
                   />
-                  <label htmlFor="privacy" className="text-sm text-muted-foreground leading-tight cursor-pointer">
+                  <span className="text-sm text-muted-foreground leading-tight">
                     I agree to the{' '}
-                    <Link to="/privacy" className="text-primary hover:underline" target="_blank">
+                    <Link to="/privacy" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
                       Privacy Policy
                     </Link>
-                  </label>
-                </div>
+                  </span>
+                </label>
               </div>
               
               <Button 
