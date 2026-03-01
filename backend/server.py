@@ -332,7 +332,17 @@ async def generate_with_llm(system_prompt: str, user_prompt: str, session_id: st
 # ==================== AUTH ENDPOINTS ====================
 
 @api_router.post("/auth/register", response_model=TokenResponse)
-async def register(user_data: UserCreate):
+async def register(user_data: UserCreate, request: Request):
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Rate limiting
+    if not rate_limiter.is_allowed(client_ip, limit=10, window=60):
+        raise HTTPException(status_code=429, detail="Too many registration attempts. Please try again later.")
+    
+    # Check terms acceptance
+    if not user_data.accepted_terms or not user_data.accepted_privacy:
+        raise HTTPException(status_code=400, detail="You must accept the Terms of Service and Privacy Policy")
+    
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -345,26 +355,94 @@ async def register(user_data: UserCreate):
         "email": user_data.email,
         "password": hash_password(user_data.password),
         "full_name": user_data.full_name,
-        "created_at": now
+        "role": "user",
+        "created_at": now,
+        "updated_at": now,
+        "login_attempts": 0,
+        "locked_until": None,
+        "last_login": None,
+        "preferences": {
+            "email_notifications": True,
+            "marketing_emails": False,
+            "product_updates": True,
+            "security_alerts": True
+        },
+        "consents": {
+            "terms_accepted": now,
+            "privacy_accepted": now,
+            "marketing": False,
+            "analytics": True,
+            "third_party": False
+        },
+        "deletion_requested": False
     }
     await db.users.insert_one(user_doc)
+    
+    # Audit log
+    await log_audit(user_id, "USER_REGISTERED", "auth", {"email": user_data.email}, client_ip)
     
     token = create_token(user_id)
     return TokenResponse(
         access_token=token,
-        user=UserResponse(id=user_id, email=user_data.email, full_name=user_data.full_name, created_at=now)
+        user=UserResponse(id=user_id, email=user_data.email, full_name=user_data.full_name, role="user", created_at=now)
     )
 
 @api_router.post("/auth/login", response_model=TokenResponse)
-async def login(credentials: UserLogin):
+async def login(credentials: UserLogin, request: Request):
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Rate limiting
+    if not rate_limiter.is_allowed(client_ip, limit=20, window=60):
+        raise HTTPException(status_code=429, detail="Too many login attempts. Please try again later.")
+    
     user = await db.users.find_one({"email": credentials.email})
-    if not user or not verify_password(credentials.password, user["password"]):
+    
+    if not user:
         raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Check if account is locked
+    if user.get("locked_until"):
+        locked_until = datetime.fromisoformat(user["locked_until"])
+        if datetime.now(timezone.utc) < locked_until:
+            remaining = int((locked_until - datetime.now(timezone.utc)).total_seconds() / 60)
+            raise HTTPException(status_code=423, detail=f"Account locked. Try again in {remaining} minutes.")
+        else:
+            # Unlock the account
+            await db.users.update_one({"id": user["id"]}, {"$set": {"locked_until": None, "login_attempts": 0}})
+    
+    # Verify password
+    if not verify_password(credentials.password, user["password"]):
+        # Increment failed attempts
+        attempts = user.get("login_attempts", 0) + 1
+        update_data = {"login_attempts": attempts}
+        
+        if attempts >= MAX_LOGIN_ATTEMPTS:
+            lockout_time = datetime.now(timezone.utc) + timedelta(minutes=LOCKOUT_DURATION_MINUTES)
+            update_data["locked_until"] = lockout_time.isoformat()
+            await db.users.update_one({"id": user["id"]}, {"$set": update_data})
+            await log_audit(user["id"], "ACCOUNT_LOCKED", "auth", {"reason": "max_attempts", "attempts": attempts}, client_ip)
+            raise HTTPException(status_code=423, detail=f"Account locked for {LOCKOUT_DURATION_MINUTES} minutes due to too many failed attempts.")
+        
+        await db.users.update_one({"id": user["id"]}, {"$set": update_data})
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Successful login - reset attempts
+    now = datetime.now(timezone.utc).isoformat()
+    await db.users.update_one({"id": user["id"]}, {"$set": {"login_attempts": 0, "locked_until": None, "last_login": now}})
+    
+    # Audit log
+    await log_audit(user["id"], "USER_LOGIN", "auth", {"method": "password"}, client_ip)
     
     token = create_token(user["id"])
     return TokenResponse(
         access_token=token,
-        user=UserResponse(id=user["id"], email=user["email"], full_name=user["full_name"], created_at=user["created_at"])
+        user=UserResponse(
+            id=user["id"], 
+            email=user["email"], 
+            full_name=user["full_name"], 
+            role=user.get("role", "user"),
+            created_at=user["created_at"]
+        )
     )
 
 @api_router.get("/auth/me", response_model=UserResponse)
