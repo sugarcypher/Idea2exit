@@ -835,6 +835,385 @@ async def get_analysis(project_id: str, current_user: dict = Depends(get_current
         raise HTTPException(status_code=404, detail="Analysis not found")
     return AnalysisResponse(**analysis)
 
+# ==================== FUNDING KIT ENDPOINTS ====================
+
+INVESTOR_PROMPT = """You are an expert startup funding advisor. Generate a list of 10 relevant investors for this startup.
+Return ONLY valid JSON array with this structure for each investor:
+[
+  {
+    "name": "Investor/Firm Name",
+    "type": "VC/Angel/Accelerator/Corporate VC/Family Office",
+    "focus_areas": ["Industry1", "Industry2"],
+    "typical_check_size": "$X - $Y",
+    "stage_preference": "Pre-seed/Seed/Series A/etc",
+    "contact_method": "How to reach them",
+    "website": "https://...",
+    "notes": "Why they're a good fit"
+  }
+]
+Include a mix of: 3 VCs, 2 Angel investors/networks, 2 Accelerators, 2 Industry-specific investors, 1 Corporate VC."""
+
+CROWDFUNDING_PROMPT = """You are a crowdfunding expert. Create strategies for multiple crowdfunding platforms.
+Return ONLY valid JSON array with this structure:
+[
+  {
+    "platform": "Platform Name",
+    "recommended_goal": "$X",
+    "campaign_duration": "X days",
+    "reward_tiers": [
+      {"name": "Tier Name", "price": "$X", "description": "What backer gets", "estimated_backers": X}
+    ],
+    "tips": ["Tip 1", "Tip 2", "Tip 3"],
+    "timeline": [
+      {"phase": "Pre-launch", "duration": "X weeks", "tasks": "What to do"},
+      {"phase": "Launch", "duration": "X days", "tasks": "What to do"},
+      {"phase": "Mid-campaign", "duration": "X weeks", "tasks": "What to do"},
+      {"phase": "Final push", "duration": "X days", "tasks": "What to do"}
+    ]
+  }
+]
+Include strategies for: Kickstarter, Indiegogo, Republic (equity), Wefunder (equity), and one other relevant platform."""
+
+OUTREACH_PROMPT = """You are a startup communications expert. Create outreach templates for investor communication.
+Return ONLY valid JSON array with these templates:
+[
+  {
+    "type": "cold_email",
+    "subject": "Email subject line",
+    "content": "Full email body with [PLACEHOLDERS] for customization",
+    "tips": ["Tip 1", "Tip 2"]
+  },
+  {
+    "type": "warm_intro_request",
+    "subject": "Subject for asking mutual connection",
+    "content": "Email asking for introduction",
+    "tips": ["Tip 1", "Tip 2"]
+  },
+  {
+    "type": "follow_up",
+    "subject": "Follow-up subject",
+    "content": "Follow-up email after no response",
+    "tips": ["Tip 1", "Tip 2"]
+  },
+  {
+    "type": "pitch_script",
+    "subject": null,
+    "content": "60-second elevator pitch script",
+    "tips": ["Delivery tips"]
+  },
+  {
+    "type": "meeting_request",
+    "subject": "Meeting request subject",
+    "content": "Email requesting a meeting",
+    "tips": ["Tip 1", "Tip 2"]
+  }
+]"""
+
+BRAND_PROMPT = """You are a brand strategist. Create a comprehensive brand identity guide.
+Return ONLY valid JSON with this structure:
+{
+  "color_palette": {
+    "primary": {"hex": "#XXXXXX", "name": "Color Name", "usage": "When to use"},
+    "secondary": {"hex": "#XXXXXX", "name": "Color Name", "usage": "When to use"},
+    "accent": {"hex": "#XXXXXX", "name": "Color Name", "usage": "When to use"},
+    "background": {"hex": "#XXXXXX", "name": "Color Name", "usage": "When to use"},
+    "text": {"hex": "#XXXXXX", "name": "Color Name", "usage": "When to use"}
+  },
+  "typography": {
+    "heading_font": {"name": "Font Name", "style": "Font style", "fallback": "Fallback font"},
+    "body_font": {"name": "Font Name", "style": "Font style", "fallback": "Fallback font"},
+    "accent_font": {"name": "Font Name", "style": "Font style", "fallback": "Fallback font"}
+  },
+  "brand_voice": {
+    "tone": ["Adjective1", "Adjective2", "Adjective3"],
+    "personality": "Description of brand personality",
+    "do": ["Do this", "Do that"],
+    "dont": ["Don't do this", "Don't do that"]
+  },
+  "tagline_options": ["Tagline 1", "Tagline 2", "Tagline 3"],
+  "logo_description": "Detailed description of ideal logo concept"
+}"""
+
+VIDEO_SCRIPT_PROMPT = """You are a video marketing expert. Create a compelling pitch video script.
+Return ONLY the script text (no JSON), formatted with:
+[SCENE 1: Opening Hook - 5 seconds]
+Visual description
+Narration: "..."
+
+[SCENE 2: Problem - 10 seconds]
+...continue for all scenes...
+
+Make it exactly {duration} seconds total. Include visual directions and narration."""
+
+@api_router.post("/funding-kit/generate")
+async def generate_funding_kit(request: FundingKitRequest, current_user: dict = Depends(get_current_user)):
+    """Generate complete funding kit with one click"""
+    project = await db.projects.find_one({"id": request.project_id, "user_id": current_user["id"]}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    project_context = f"""
+Project: {project['name']}
+Description: {project['description']}
+Vision: {project['vision']}
+Target Market: {project['target_market']}
+Problem: {project['problem_statement']}
+Solution: {project['solution']}
+Industry: {project['industry']}
+"""
+    
+    kit_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    results = {
+        "id": kit_id,
+        "project_id": request.project_id,
+        "investors": [],
+        "crowdfunding_strategies": [],
+        "outreach_templates": [],
+        "pitch_video_script": "",
+        "pitch_video_url": None,
+        "brand_assets": [],
+        "status": "generating",
+        "created_at": now
+    }
+    
+    import json
+    import re
+    
+    # Generate investors list
+    if request.include_investors:
+        try:
+            response = await generate_with_llm(INVESTOR_PROMPT, project_context, f"investors-{request.project_id}")
+            try:
+                investors = json.loads(response)
+            except:
+                match = re.search(r'\[.*\]', response, re.DOTALL)
+                investors = json.loads(match.group()) if match else []
+            results["investors"] = investors
+        except Exception as e:
+            logger.error(f"Investor generation error: {e}")
+    
+    # Generate crowdfunding strategies
+    if request.include_crowdfunding:
+        try:
+            response = await generate_with_llm(CROWDFUNDING_PROMPT, project_context, f"crowdfunding-{request.project_id}")
+            try:
+                strategies = json.loads(response)
+            except:
+                match = re.search(r'\[.*\]', response, re.DOTALL)
+                strategies = json.loads(match.group()) if match else []
+            results["crowdfunding_strategies"] = strategies
+        except Exception as e:
+            logger.error(f"Crowdfunding generation error: {e}")
+    
+    # Generate outreach templates
+    if request.include_outreach:
+        try:
+            response = await generate_with_llm(OUTREACH_PROMPT, project_context, f"outreach-{request.project_id}")
+            try:
+                templates = json.loads(response)
+            except:
+                match = re.search(r'\[.*\]', response, re.DOTALL)
+                templates = json.loads(match.group()) if match else []
+            results["outreach_templates"] = templates
+        except Exception as e:
+            logger.error(f"Outreach generation error: {e}")
+    
+    # Generate video script
+    if request.include_video:
+        try:
+            video_prompt = VIDEO_SCRIPT_PROMPT.replace("{duration}", str(request.video_duration * 10))  # Approximate words
+            response = await generate_with_llm(video_prompt, project_context, f"video-script-{request.project_id}")
+            results["pitch_video_script"] = response
+        except Exception as e:
+            logger.error(f"Video script generation error: {e}")
+    
+    # Generate brand assets
+    if request.include_branding:
+        try:
+            response = await generate_with_llm(BRAND_PROMPT, project_context, f"brand-{request.project_id}")
+            try:
+                brand_data = json.loads(response)
+            except:
+                match = re.search(r'\{.*\}', response, re.DOTALL)
+                brand_data = json.loads(match.group()) if match else {}
+            
+            if brand_data:
+                results["brand_assets"] = [
+                    {"type": "color_palette", "name": "Brand Colors", "data": brand_data.get("color_palette", {}), "description": "Primary brand color palette"},
+                    {"type": "typography", "name": "Typography Guide", "data": brand_data.get("typography", {}), "description": "Recommended fonts and usage"},
+                    {"type": "brand_voice", "name": "Brand Voice", "data": brand_data.get("brand_voice", {}), "description": "Tone and communication style"},
+                    {"type": "taglines", "name": "Tagline Options", "data": brand_data.get("tagline_options", []), "description": "Suggested brand taglines"},
+                    {"type": "logo_concept", "name": "Logo Concept", "data": brand_data.get("logo_description", ""), "description": "Logo design direction"}
+                ]
+        except Exception as e:
+            logger.error(f"Brand generation error: {e}")
+    
+    results["status"] = "completed"
+    
+    # Save to database
+    await db.funding_kits.insert_one({**results, "user_id": current_user["id"]})
+    
+    return results
+
+@api_router.post("/funding-kit/generate-logo")
+async def generate_logo(request: LogoGenerationRequest, current_user: dict = Depends(get_current_user)):
+    """Generate logo using AI image generation"""
+    project = await db.projects.find_one({"id": request.project_id, "user_id": current_user["id"]}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    style_prompts = {
+        "modern": "modern, clean, minimalist, geometric shapes, professional",
+        "minimal": "ultra minimal, simple, single color, iconic, memorable",
+        "bold": "bold, strong, impactful, dynamic, energetic colors",
+        "playful": "playful, friendly, rounded shapes, vibrant colors, approachable",
+        "corporate": "corporate, trustworthy, traditional, elegant, sophisticated"
+    }
+    
+    style_desc = style_prompts.get(request.style, style_prompts["modern"])
+    
+    prompt = f"""Create a professional logo for a company called "{project['name']}". 
+The company is in the {project['industry']} industry and {project['description']}.
+Style: {style_desc}
+The logo should be simple, memorable, and work well at any size.
+White or transparent background, centered composition."""
+    
+    try:
+        image_gen = OpenAIImageGeneration(api_key=EMERGENT_LLM_KEY)
+        images = await image_gen.generate_images(
+            prompt=prompt,
+            model="gpt-image-1",
+            number_of_images=1
+        )
+        
+        if images and len(images) > 0:
+            image_base64 = base64.b64encode(images[0]).decode('utf-8')
+            
+            # Save to database
+            logo_id = str(uuid.uuid4())
+            now = datetime.now(timezone.utc).isoformat()
+            await db.logos.insert_one({
+                "id": logo_id,
+                "project_id": request.project_id,
+                "user_id": current_user["id"],
+                "style": request.style,
+                "image_base64": image_base64,
+                "created_at": now
+            })
+            
+            return {
+                "id": logo_id,
+                "project_id": request.project_id,
+                "style": request.style,
+                "image_base64": image_base64,
+                "created_at": now
+            }
+        else:
+            raise HTTPException(status_code=500, detail="No logo was generated")
+    except Exception as e:
+        logger.error(f"Logo generation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Logo generation failed: {str(e)}")
+
+@api_router.post("/funding-kit/generate-video")
+async def generate_video(request: VideoGenerationRequest, current_user: dict = Depends(get_current_user)):
+    """Generate promotional video using Sora 2"""
+    project = await db.projects.find_one({"id": request.project_id, "user_id": current_user["id"]}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    style_prompts = {
+        "professional": "professional corporate video, clean transitions, modern office aesthetic",
+        "energetic": "dynamic energetic video, fast cuts, vibrant colors, exciting movement",
+        "cinematic": "cinematic quality, dramatic lighting, slow motion moments, epic feel"
+    }
+    
+    style_desc = style_prompts.get(request.style, style_prompts["professional"])
+    
+    prompt = f"""Create a {request.duration}-second promotional video for {project['name']}, 
+a {project['industry']} startup that {project['description']}.
+The video should showcase: {project['solution']}.
+Target audience: {project['target_market']}.
+Style: {style_desc}.
+Include text overlays with the company name and key value proposition."""
+    
+    try:
+        video_gen = OpenAIVideoGeneration(api_key=EMERGENT_LLM_KEY)
+        
+        video_id = str(uuid.uuid4())
+        output_path = f"/tmp/video_{video_id}.mp4"
+        
+        video_bytes = video_gen.text_to_video(
+            prompt=prompt,
+            model="sora-2",
+            size="1280x720",
+            duration=request.duration,
+            max_wait_time=600
+        )
+        
+        if video_bytes:
+            video_gen.save_video(video_bytes, output_path)
+            
+            # Read video and encode to base64 for storage/transfer
+            with open(output_path, 'rb') as f:
+                video_base64 = base64.b64encode(f.read()).decode('utf-8')
+            
+            now = datetime.now(timezone.utc).isoformat()
+            await db.videos.insert_one({
+                "id": video_id,
+                "project_id": request.project_id,
+                "user_id": current_user["id"],
+                "style": request.style,
+                "duration": request.duration,
+                "video_path": output_path,
+                "created_at": now
+            })
+            
+            return {
+                "id": video_id,
+                "project_id": request.project_id,
+                "style": request.style,
+                "duration": request.duration,
+                "video_base64": video_base64,
+                "created_at": now
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Video generation failed")
+    except Exception as e:
+        logger.error(f"Video generation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Video generation failed: {str(e)}")
+
+@api_router.get("/funding-kit/{project_id}")
+async def get_funding_kit(project_id: str, current_user: dict = Depends(get_current_user)):
+    """Get existing funding kit for a project"""
+    kit = await db.funding_kits.find_one(
+        {"project_id": project_id, "user_id": current_user["id"]},
+        {"_id": 0, "user_id": 0},
+        sort=[("created_at", -1)]
+    )
+    if not kit:
+        raise HTTPException(status_code=404, detail="Funding kit not found")
+    return kit
+
+@api_router.get("/funding-kit/{project_id}/logos")
+async def get_project_logos(project_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all generated logos for a project"""
+    logos = await db.logos.find(
+        {"project_id": project_id, "user_id": current_user["id"]},
+        {"_id": 0, "user_id": 0}
+    ).sort("created_at", -1).to_list(20)
+    return logos
+
+@api_router.get("/funding-kit/{project_id}/videos")
+async def get_project_videos(project_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all generated videos for a project"""
+    videos = await db.videos.find(
+        {"project_id": project_id, "user_id": current_user["id"]},
+        {"_id": 0, "user_id": 0, "video_path": 0}
+    ).sort("created_at", -1).to_list(20)
+    return videos
+
 # ==================== HEALTH & STATUS ====================
 
 @api_router.get("/")
