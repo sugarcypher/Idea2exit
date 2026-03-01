@@ -163,11 +163,13 @@ export default function Register() {
               
               {/* Terms & Privacy Checkboxes */}
               <div className="space-y-3">
-                <div className="flex items-start space-x-2">
-                  <Checkbox 
+                <div className="flex items-start space-x-3">
+                  <input 
+                    type="checkbox"
                     id="terms" 
                     checked={acceptedTerms}
-                    onCheckedChange={setAcceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-gray-600 bg-gray-800 text-primary focus:ring-primary focus:ring-offset-gray-900"
                     data-testid="accept-terms-checkbox"
                   />
                   <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight cursor-pointer">
@@ -177,11 +179,13 @@ export default function Register() {
                     </Link>
                   </label>
                 </div>
-                <div className="flex items-start space-x-2">
-                  <Checkbox 
+                <div className="flex items-start space-x-3">
+                  <input 
+                    type="checkbox"
                     id="privacy" 
                     checked={acceptedPrivacy}
-                    onCheckedChange={setAcceptedPrivacy}
+                    onChange={(e) => setAcceptedPrivacy(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-gray-600 bg-gray-800 text-primary focus:ring-primary focus:ring-offset-gray-900"
                     data-testid="accept-privacy-checkbox"
                   />
                   <label htmlFor="privacy" className="text-sm text-muted-foreground leading-tight cursor-pointer">
