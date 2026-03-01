@@ -697,6 +697,36 @@ Format in markdown with practical guidance. Write 1500+ words.
 Note: This is general guidance and not legal advice. Consult an IP attorney for specific situations."""
 }
 
+def clean_ai_commentary(content: str) -> str:
+    """Remove AI meta-commentary and conversation artifacts from generated content."""
+    import re
+    
+    # Patterns to remove (case insensitive)
+    patterns_to_remove = [
+        r"(?i)(?:if you('d| would) like|would you like|shall I|should I|I can|let me know|feel free).*?(?:\.|!|\?|$)",
+        r"(?i)(?:I('d| would) be happy to|I('m| am) happy to|I hope this).*?(?:\.|!|\?|$)",
+        r"(?i)(?:please let me know|don't hesitate|if you need|if you want).*?(?:\.|!|\?|$)",
+        r"(?i)(?:I can expand|I can provide|I can create|I can help).*?(?:\.|!|\?|$)",
+        r"(?i)(?:this (?:document|plan|report|guide|strategy) (?:provides|offers|gives|serves)).*?(?:starting point|foundation|basis).*?(?:\.|!|\?|$)",
+        r"(?i)^(?:here is|here's|below is).*?(?:requested|you asked for).*?(?:\.|!|\?|$)",
+        r"(?i)(?:note:|please note:|important:).*?(?:placeholder|example|sample|template).*?(?:\.|!|\?|$)",
+        r"\[.*?(?:insert|add|your|placeholder|TBD|TBA).*?\]",
+    ]
+    
+    cleaned = content
+    for pattern in patterns_to_remove:
+        cleaned = re.sub(pattern, '', cleaned, flags=re.MULTILINE)
+    
+    # Remove multiple consecutive newlines (more than 2)
+    cleaned = re.sub(r'\n{4,}', '\n\n\n', cleaned)
+    
+    # Remove lines that are just whitespace
+    lines = cleaned.split('\n')
+    lines = [line for line in lines if line.strip() or line == '']
+    cleaned = '\n'.join(lines)
+    
+    return cleaned.strip()
+
 @api_router.post("/documents/generate", response_model=DocumentResponse)
 async def generate_document(request: DocumentRequest, current_user: dict = Depends(get_current_user)):
     # Verify project ownership
@@ -726,9 +756,12 @@ Problem Statement: {project['problem_statement']}
 Solution: {project['solution']}
 Industry: {project['industry']}
 
-Please create the document based on these project details."""
+Generate the complete document now. Output ONLY the document content with no additional commentary."""
     
     content = await generate_with_llm(system_prompt, user_prompt, f"doc-{request.project_id}-{request.document_type}")
+    
+    # Clean any AI meta-commentary that slipped through
+    content = clean_ai_commentary(content)
     
     # Save document
     doc_id = str(uuid.uuid4())
