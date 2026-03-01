@@ -1,12 +1,7 @@
 # IdeaForge - Innovation Launch Platform
 
 ## Original Problem Statement
-Build an app for entrepreneurs/inventors/innovators/creatives that identifies user needs, then has an AI agent swarm (workers, managers, specialists) to go from idea/vision to:
-- Protecting intellectual property
-- Auto-generating: white papers, market research, business plans, pitch decks, marketing strategy
-- Building landing pages
-- Comparative analysis (world with/without the idea)
-- Estimating time to actualization, financial cost, and business prognosis
+Build an app for entrepreneurs/inventors/innovators/creatives with AI agent swarm that goes from idea/vision to protecting IP, auto-generating documents, market research, business plans, pitch decks, marketing strategy, landing pages, comparative analysis, timeline estimates, financial projections, and business prognosis.
 
 ## User Choices
 - AI Model: OpenAI GPT-5.2 with Emergent LLM Key
@@ -18,59 +13,73 @@ Build an app for entrepreneurs/inventors/innovators/creatives that identifies us
 ### Backend (FastAPI + MongoDB)
 - JWT authentication with bcrypt password hashing
 - Project CRUD with embedded AI agent swarm
-- Document generation via GPT-5.2 (6 types)
-- Landing page generator
-- Business analysis & projections
+- Document generation (6 types) via GPT-5.2
+- Landing page generator with AI + template fallback
+- Business analysis & projections with mock fallback
 
 ### Frontend (React + Tailwind + Shadcn)
 - Dark theme "Deep Obsidian" design
-- Multi-step project wizard
+- Multi-step project wizard (4 steps)
 - AI agent visualization by role (manager/specialist/worker)
-- Document hub with markdown preview
-- Landing page builder with responsive preview
-- Analysis dashboard with comparative/timeline/financial/prognosis views
+- Document hub with markdown preview + download
+- Landing page builder with responsive preview + export
+- Comprehensive analytics dashboard
 
-## User Personas
-1. **Startup Founder** - Needs full business planning suite
-2. **Inventor** - Focuses on IP protection and technical docs
-3. **Creative** - Uses landing page builder and pitch decks
+## What's Been Implemented (March 2026)
 
-## Core Requirements (Static)
-- [x] User authentication (register/login)
-- [x] Project creation wizard
-- [x] AI agent swarm display
-- [x] Document generation (6 types)
-- [x] Landing page builder
-- [x] Business analysis & projections
-
-## What's Been Implemented (Jan 2026)
-- Full authentication flow with JWT tokens
+### Phase 1 (Initial Build)
+- Full authentication flow (register/login)
 - 4-step project creation wizard
 - Dashboard with project stats
-- AI Agent swarm visualization (manager, specialist, worker roles)
-- Document Hub with 6 document types (white paper, business plan, pitch deck, market research, marketing strategy, IP protection)
-- Landing page builder with HTML/CSS export
-- Analysis page with comparative, timeline, financial, and prognosis views
-- Beautiful dark theme UI following design guidelines
+- AI Agent swarm visualization (9 agents)
+- Document Hub (6 document types)
+- Basic landing page builder
+- Basic analysis page
+
+### Phase 2 (Enhancements)
+- ✅ **Workflow Progress Indicator** - 5-step visual journey at top of project page
+- ✅ **Landing Page Template Fallback** - Works even when AI times out
+- ✅ **Comprehensive Analytics** with 6 tabs:
+  - Overview (Market Size, Growth Rate, Break Even, ROI)
+  - Marketing (CAC, LTV, Conversion Rate, Channel Performance)
+  - Sales (Deal Size, Sales Cycle, Win Rate, Pipeline)
+  - Industry (TAM, Competitors, Market Share, Trends)
+  - Financial (A/B/C Scenarios with different projections)
+  - Prognosis (Success Factors, Risks, Recommendations)
+- ✅ **A/B/C Financial Scenarios** - Conservative, Moderate, Aggressive
+- ✅ **Global/Regional Toggle** for market analysis
+- ✅ **Business Services Tab**:
+  - Domain & Hosting (placeholder)
+  - Business Formation (placeholder)
+  - Trademark Filing (placeholder)
+  - Business Banking (coming soon)
 
 ## Prioritized Backlog
 
-### P0 (Critical)
-- All P0 items completed
+### P0 (Completed)
+- All core features implemented
 
-### P1 (High Priority)
+### P1 (High Priority - Next)
+- Integrate domain purchasing API (GoDaddy/Namecheap)
+- Integrate business formation service (Stripe Atlas / Firstbase)
+- Real-time agent status via WebSocket
 - PDF export for documents
-- Real-time agent status updates via WebSocket
-- Project sharing/collaboration
 
 ### P2 (Medium Priority)
+- Trademark filing integration
 - Document version history
 - Custom landing page templates
-- Export analysis to PDF report
-- Integration with external tools (Notion, Slack)
+- Project sharing/collaboration
 
-## Next Tasks
-1. Add PDF export functionality using html2pdf.js
-2. Implement WebSocket for real-time agent updates
-3. Add project templates for quick start
-4. Create onboarding tutorial
+## Tech Stack
+- Frontend: React 18, Tailwind CSS, Shadcn/UI, Lucide Icons
+- Backend: FastAPI, MongoDB, JWT Auth
+- AI: OpenAI GPT-5.2 via Emergent LLM Key
+- Deployment: Kubernetes, Supervisor
+
+## API Endpoints
+- POST /api/auth/register, /api/auth/login
+- GET/POST/DELETE /api/projects
+- POST /api/documents/generate
+- POST /api/landing-page/generate
+- POST /api/analysis/generate
