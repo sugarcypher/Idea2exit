@@ -64,7 +64,7 @@ export const landingPageAPI = {
 
 // Analysis APIs
 export const analysisAPI = {
-  generate: (data) => api.post('/analysis/generate', data),
+  generate: (data) => api.post('/analysis/generate', data, { timeout: 10000 }),
   get: (projectId) => api.get(`/analysis/${projectId}`),
 };
 
