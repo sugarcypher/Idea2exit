@@ -15,6 +15,7 @@ import DocumentHub from "./pages/DocumentHub";
 import LandingPageBuilder from "./pages/LandingPageBuilder";
 import Analysis from "./pages/Analysis";
 import Simulation from "./pages/Simulation";
+import FundingKit from "./pages/FundingKit";
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
