@@ -1,17 +1,21 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 import base64
+import re
+import hashlib
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from pydantic import BaseModel, Field, ConfigDict, EmailStr, field_validator
 from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone, timedelta
+from collections import defaultdict
+import time
 import jwt
 import bcrypt
 import asyncio
@@ -35,6 +39,13 @@ JWT_EXPIRATION_HOURS = 24
 # LLM Key
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
 
+# Security Configuration
+MAX_LOGIN_ATTEMPTS = 5
+LOCKOUT_DURATION_MINUTES = 15
+PASSWORD_MIN_LENGTH = 8
+RATE_LIMIT_REQUESTS = 100  # requests per minute
+RATE_LIMIT_WINDOW = 60  # seconds
+
 app = FastAPI(title="IdeaForge - Innovation Launch Platform")
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
@@ -43,7 +54,54 @@ security = HTTPBearer()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# ==================== MODELS ====================
+# ==================== RATE LIMITING ====================
+
+class RateLimiter:
+    def __init__(self):
+        self.requests = defaultdict(list)
+    
+    def is_allowed(self, client_ip: str, limit: int = RATE_LIMIT_REQUESTS, window: int = RATE_LIMIT_WINDOW) -> bool:
+        now = time.time()
+        # Clean old requests
+        self.requests[client_ip] = [t for t in self.requests[client_ip] if now - t < window]
+        if len(self.requests[client_ip]) >= limit:
+            return False
+        self.requests[client_ip].append(now)
+        return True
+
+rate_limiter = RateLimiter()
+
+# ==================== AUDIT LOGGING ====================
+
+async def log_audit(user_id: str, action: str, resource: str, details: Dict[str, Any] = None, ip_address: str = None):
+    """Log user actions for audit trail"""
+    audit_entry = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "action": action,
+        "resource": resource,
+        "details": details or {},
+        "ip_address": ip_address,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    await db.audit_logs.insert_one(audit_entry)
+    logger.info(f"AUDIT: {action} on {resource} by user {user_id}")
+
+# ==================== PASSWORD VALIDATION ====================
+
+def validate_password_strength(password: str) -> tuple[bool, str]:
+    """Validate password meets security requirements"""
+    if len(password) < PASSWORD_MIN_LENGTH:
+        return False, f"Password must be at least {PASSWORD_MIN_LENGTH} characters long"
+    if not re.search(r'[A-Z]', password):
+        return False, "Password must contain at least one uppercase letter"
+    if not re.search(r'[a-z]', password):
+        return False, "Password must contain at least one lowercase letter"
+    if not re.search(r'\d', password):
+        return False, "Password must contain at least one number"
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        return False, "Password must contain at least one special character (!@#$%^&*(),.?\":{}|<>)"
+    return True, "Password meets requirements"
 
 class UserCreate(BaseModel):
     email: EmailStr
