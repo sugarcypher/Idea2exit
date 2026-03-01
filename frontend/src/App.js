@@ -68,6 +68,7 @@ function AppRoutes() {
       <Route path="/projects/:id/documents/:docId" element={<ProtectedRoute><DocumentHub /></ProtectedRoute>} />
       <Route path="/projects/:id/landing-page" element={<ProtectedRoute><LandingPageBuilder /></ProtectedRoute>} />
       <Route path="/projects/:id/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
+      <Route path="/projects/:id/simulation" element={<ProtectedRoute><Simulation /></ProtectedRoute>} />
       
       {/* Redirect root to login or dashboard */}
       <Route path="/" element={<Navigate to="/login" replace />} />
