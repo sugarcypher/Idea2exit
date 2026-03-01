@@ -34,8 +34,8 @@ const SECTION_OPTIONS = [
   { id: 'contact', label: 'Contact Form', icon: Mail, default: true },
 ];
 
-// Fallback template generator
-const generateFallbackTemplate = (project, style) => {
+// Fallback template generator with section toggles
+const generateFallbackTemplate = (project, style, sections) => {
   const colors = {
     modern: { primary: '#3B82F6', secondary: '#1E40AF', accent: '#60A5FA' },
     bold: { primary: '#DC2626', secondary: '#991B1B', accent: '#F87171' },
@@ -45,26 +45,11 @@ const generateFallbackTemplate = (project, style) => {
   
   const c = colors[style] || colors.modern;
   
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${project.name}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">${project.name}</div>
-            <div class="nav-links">
-                <a href="#features">Features</a>
-                <a href="#about">About</a>
-                <a href="#contact" class="cta-btn">Get Started</a>
-            </div>
-        </div>
-    </nav>
-    
+  // Build HTML sections based on toggles
+  let htmlSections = '';
+  
+  if (sections.hero) {
+    htmlSections += `
     <header class="hero">
         <div class="hero-content">
             <h1>${project.name}</h1>
@@ -74,8 +59,11 @@ const generateFallbackTemplate = (project, style) => {
                 <a href="#features" class="btn-secondary">Learn More</a>
             </div>
         </div>
-    </header>
-    
+    </header>`;
+  }
+  
+  if (sections.features) {
+    htmlSections += `
     <section id="features" class="features">
         <div class="container">
             <h2>Why Choose Us</h2>
@@ -97,23 +85,191 @@ const generateFallbackTemplate = (project, style) => {
                 </div>
             </div>
         </div>
-    </section>
-    
-    <section id="about" class="about">
+    </section>`;
+  }
+  
+  if (sections.problem) {
+    htmlSections += `
+    <section id="problem" class="problem-solution">
         <div class="container">
-            <h2>The Problem We Solve</h2>
-            <p>${project.problem_statement}</p>
+            <div class="problem-solution-grid">
+                <div class="problem-card">
+                    <h2>The Problem</h2>
+                    <p>${project.problem_statement}</p>
+                </div>
+                <div class="solution-card">
+                    <h2>Our Solution</h2>
+                    <p>${project.solution}</p>
+                </div>
+            </div>
         </div>
-    </section>
-    
-    <section id="contact" class="contact">
+    </section>`;
+  }
+  
+  if (sections.howItWorks) {
+    htmlSections += `
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <h2>How It Works</h2>
+            <div class="steps-grid">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Sign Up</h3>
+                    <p>Create your account in minutes</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Configure</h3>
+                    <p>Set up your preferences and goals</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Launch</h3>
+                    <p>Start achieving results immediately</p>
+                </div>
+            </div>
+        </div>
+    </section>`;
+  }
+  
+  if (sections.testimonials) {
+    htmlSections += `
+    <section id="testimonials" class="testimonials">
+        <div class="container">
+            <h2>What Our Customers Say</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <p class="quote">"This solution transformed our business. Highly recommended!"</p>
+                    <div class="author">- Happy Customer, CEO</div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="quote">"Outstanding results from day one. The team is incredibly supportive."</p>
+                    <div class="author">- Satisfied Client, Founder</div>
+                </div>
+            </div>
+        </div>
+    </section>`;
+  }
+  
+  if (sections.pricing) {
+    htmlSections += `
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <h2>Simple, Transparent Pricing</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Starter</h3>
+                    <div class="price">$29<span>/mo</span></div>
+                    <ul>
+                        <li>Core features</li>
+                        <li>Email support</li>
+                        <li>5 projects</li>
+                    </ul>
+                    <a href="#contact" class="btn-primary">Get Started</a>
+                </div>
+                <div class="pricing-card featured">
+                    <h3>Professional</h3>
+                    <div class="price">$79<span>/mo</span></div>
+                    <ul>
+                        <li>All Starter features</li>
+                        <li>Priority support</li>
+                        <li>Unlimited projects</li>
+                        <li>Advanced analytics</li>
+                    </ul>
+                    <a href="#contact" class="btn-primary">Get Started</a>
+                </div>
+                <div class="pricing-card">
+                    <h3>Enterprise</h3>
+                    <div class="price">Custom</div>
+                    <ul>
+                        <li>All Pro features</li>
+                        <li>Dedicated support</li>
+                        <li>Custom integrations</li>
+                        <li>SLA guarantee</li>
+                    </ul>
+                    <a href="#contact" class="btn-secondary">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </section>`;
+  }
+  
+  if (sections.faq) {
+    htmlSections += `
+    <section id="faq" class="faq">
+        <div class="container">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <h3>How do I get started?</h3>
+                    <p>Simply sign up for an account and follow our onboarding guide. You'll be up and running in minutes.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Is there a free trial?</h3>
+                    <p>Yes! We offer a 14-day free trial with full access to all features.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Can I cancel anytime?</h3>
+                    <p>Absolutely. No long-term contracts or hidden fees. Cancel whenever you need.</p>
+                </div>
+            </div>
+        </div>
+    </section>`;
+  }
+  
+  if (sections.cta) {
+    htmlSections += `
+    <section id="cta" class="cta-section">
         <div class="container">
             <h2>Ready to Get Started?</h2>
-            <p>Join us in revolutionizing the ${project.industry || 'industry'}</p>
-            <a href="mailto:contact@${project.name.toLowerCase().replace(/\s+/g, '')}.com" class="btn-primary">Contact Us</a>
+            <p>Join thousands of satisfied customers and transform your ${project.industry || 'business'} today.</p>
+            <a href="#contact" class="btn-primary">Start Free Trial</a>
         </div>
-    </section>
-    
+    </section>`;
+  }
+  
+  if (sections.contact) {
+    htmlSections += `
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2>Get In Touch</h2>
+            <form class="contact-form">
+                <div class="form-group">
+                    <input type="text" placeholder="Your Name" required />
+                </div>
+                <div class="form-group">
+                    <input type="email" placeholder="Your Email" required />
+                </div>
+                <div class="form-group">
+                    <textarea placeholder="Your Message" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Send Message</button>
+            </form>
+        </div>
+    </section>`;
+  }
+  
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${project.name}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">${project.name}</div>
+            <div class="nav-links">
+                ${sections.features ? '<a href="#features">Features</a>' : ''}
+                ${sections.pricing ? '<a href="#pricing">Pricing</a>' : ''}
+                ${sections.faq ? '<a href="#faq">FAQ</a>' : ''}
+                <a href="#contact" class="cta-btn">Get Started</a>
+            </div>
+        </div>
+    </nav>
+    ${htmlSections}
     <footer>
         <div class="container">
             <p>&copy; 2026 ${project.name}. All rights reserved.</p>
@@ -138,26 +294,60 @@ body { font-family: 'Inter', sans-serif; line-height: 1.6; color: #1a1a1a; }
 .hero h1 { font-size: 3.5rem; font-weight: 700; margin-bottom: 1.5rem; }
 .tagline { font-size: 1.25rem; opacity: 0.9; margin-bottom: 2rem; }
 .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-.btn-primary { background: white; color: ${c.primary}; padding: 1rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600; transition: transform 0.3s, box-shadow 0.3s; display: inline-block; }
+.btn-primary { background: ${c.primary}; color: white; padding: 1rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600; transition: transform 0.3s, box-shadow 0.3s; display: inline-block; border: none; cursor: pointer; }
 .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-.btn-secondary { background: transparent; color: white; padding: 1rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600; border: 2px solid white; display: inline-block; transition: background 0.3s; }
-.btn-secondary:hover { background: rgba(255,255,255,0.1); }
-.features { padding: 6rem 0; background: #f8f9fa; }
-.features h2, .about h2, .contact h2 { font-size: 2.5rem; text-align: center; margin-bottom: 3rem; color: #1a1a1a; }
-.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
-.feature-card { background: white; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.3s, box-shadow 0.3s; }
-.feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 40px rgba(0,0,0,0.12); }
+.hero .btn-primary { background: white; color: ${c.primary}; }
+.btn-secondary { background: transparent; color: ${c.primary}; padding: 1rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600; border: 2px solid ${c.primary}; display: inline-block; transition: background 0.3s; }
+.btn-secondary:hover { background: ${c.primary}; color: white; }
+.hero .btn-secondary { border-color: white; color: white; }
+.hero .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+.features, .how-it-works, .faq { padding: 6rem 0; background: #f8f9fa; }
+.features h2, .how-it-works h2, .faq h2, .testimonials h2, .pricing h2, .cta-section h2, .contact h2 { font-size: 2.5rem; text-align: center; margin-bottom: 3rem; color: #1a1a1a; }
+.feature-grid, .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+.feature-card, .step { background: white; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.3s, box-shadow 0.3s; }
+.feature-card:hover, .step:hover { transform: translateY(-5px); box-shadow: 0 10px 40px rgba(0,0,0,0.12); }
 .feature-icon { font-size: 3rem; margin-bottom: 1rem; }
-.feature-card h3 { color: ${c.primary}; margin-bottom: 1rem; font-size: 1.25rem; }
-.feature-card p { color: #666; }
-.about { padding: 6rem 0; text-align: center; }
-.about p { max-width: 800px; margin: 0 auto; font-size: 1.1rem; color: #4a4a4a; }
-.contact { padding: 6rem 0; background: linear-gradient(135deg, ${c.primary} 0%, ${c.secondary} 100%); color: white; text-align: center; }
-.contact h2 { color: white; }
-.contact p { margin-bottom: 2rem; opacity: 0.9; }
-.contact .btn-primary { background: white; color: ${c.primary}; }
+.feature-card h3, .step h3 { color: ${c.primary}; margin-bottom: 1rem; font-size: 1.25rem; }
+.feature-card p, .step p { color: #666; }
+.step-number { width: 50px; height: 50px; background: ${c.primary}; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-weight: 700; font-size: 1.25rem; }
+.problem-solution { padding: 6rem 0; }
+.problem-solution-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+.problem-card, .solution-card { padding: 3rem; border-radius: 16px; }
+.problem-card { background: #fee2e2; }
+.problem-card h2 { color: #dc2626; }
+.solution-card { background: #dcfce7; }
+.solution-card h2 { color: #16a34a; }
+.problem-card h2, .solution-card h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+.testimonials { padding: 6rem 0; }
+.testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+.testimonial-card { background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+.quote { font-style: italic; font-size: 1.1rem; margin-bottom: 1rem; color: #4a4a4a; }
+.author { color: ${c.primary}; font-weight: 600; }
+.pricing { padding: 6rem 0; }
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto; }
+.pricing-card { background: white; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+.pricing-card.featured { border: 2px solid ${c.primary}; transform: scale(1.05); }
+.pricing-card h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+.price { font-size: 3rem; font-weight: 700; color: ${c.primary}; margin-bottom: 1.5rem; }
+.price span { font-size: 1rem; color: #666; }
+.pricing-card ul { list-style: none; margin-bottom: 2rem; }
+.pricing-card li { padding: 0.5rem 0; color: #4a4a4a; }
+.faq-list { max-width: 800px; margin: 0 auto; }
+.faq-item { background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+.faq-item h3 { color: ${c.primary}; margin-bottom: 0.5rem; }
+.faq-item p { color: #666; }
+.cta-section { padding: 6rem 0; background: linear-gradient(135deg, ${c.primary} 0%, ${c.secondary} 100%); color: white; text-align: center; }
+.cta-section h2 { color: white; }
+.cta-section p { margin-bottom: 2rem; opacity: 0.9; font-size: 1.1rem; }
+.cta-section .btn-primary { background: white; color: ${c.primary}; }
+.contact { padding: 6rem 0; background: #f8f9fa; }
+.contact-form { max-width: 500px; margin: 0 auto; }
+.form-group { margin-bottom: 1rem; }
+.form-group input, .form-group textarea { width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; font-family: inherit; }
+.form-group input:focus, .form-group textarea:focus { outline: none; border-color: ${c.primary}; }
+.contact .btn-primary { width: 100%; }
 footer { background: #1a1a1a; color: white; text-align: center; padding: 2rem; }
-@media (max-width: 768px) { .hero h1 { font-size: 2.5rem; } .nav-links { display: none; } }`;
+@media (max-width: 768px) { .hero h1 { font-size: 2.5rem; } .nav-links { display: none; } .pricing-card.featured { transform: scale(1); } }`;
 
   return { html, css };
 };
